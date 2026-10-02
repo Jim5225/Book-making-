@@ -99,8 +99,8 @@
     modalPron: document.getElementById('modal-pron'),
     modalMeaning: document.getElementById('modal-meaning'),
     modalSentence: document.getElementById('modal-sentence'),
+    btnModalSayBilingual: document.getElementById('btn-modal-say-bilingual'),
     btnModalSayEn: document.getElementById('btn-modal-say-en'),
-    btnModalSayBn: document.getElementById('btn-modal-say-bn'),
     btnModalSaySlow: document.getElementById('btn-modal-say-slow'),
     btnModalSpelling: document.getElementById('btn-modal-spelling'),
     btnModalSaySentence: document.getElementById('btn-modal-say-sentence'),
@@ -362,11 +362,22 @@
       return this.speak(word, { lang: 'en-US', rate, voice: state.settings.voiceEn });
     },
 
-    speakBengali(text) {
-      return this.speak(text, { lang: 'bn-BD', rate: state.settings.rate, voice: state.settings.voiceBn });
+    speakBengali(text, slow = false) {
+      const rate = slow ? 0.65 : state.settings.rate;
+      return this.speak(text, { lang: 'bn-BD', rate, voice: state.settings.voiceBn });
     },
 
-    async spellOut(word) {
+    async speakBilingual(word, meaning, slow = false) {
+      if (!this.synth) return;
+      // 1. First speak English
+      await this.speakEnglish(word, slow);
+      // Brief natural pause for children to absorb the sound
+      await new Promise(r => setTimeout(r, 400));
+      // 2. Then speak Bengali meaning
+      await this.speakBengali(meaning, slow);
+    },
+
+    async spellOut(word, meaning = null) {
       if (!this.synth) return;
       const letters = word.toUpperCase().split('');
       for (const char of letters) {
@@ -376,7 +387,11 @@
         }
       }
       await new Promise(r => setTimeout(r, 200));
-      await this.speakEnglish(word);
+      if (meaning) {
+        await this.speakBilingual(word, meaning);
+      } else {
+        await this.speakEnglish(word);
+      }
     }
   };
 
@@ -647,8 +662,8 @@
         <p class="card-pron">${item.pron}</p>
         <h4 class="card-bangla">${item.meaning}</h4>
         <div class="card-actions-mini">
-          <button class="card-btn-mini listen-en">🔊 English</button>
-          <button class="card-btn-mini listen-bn">🗣️ বাংলা</button>
+          <button class="card-btn-mini listen-both">🔊 English + বাংলা</button>
+          <button class="card-btn-mini listen-slow">🐢 ধীরে ধীরে</button>
         </div>
       `;
 
@@ -659,24 +674,25 @@
         openWordModal(item);
       });
 
-      // Quick English audio
+      // Quick Bilingual Audio: English first, then Bengali
       const speakerBadge = card.querySelector('.card-speaker-badge');
-      const btnEn = card.querySelector('.listen-en');
-      [speakerBadge, btnEn].forEach(btn => {
+      const btnBoth = card.querySelector('.listen-both');
+      [speakerBadge, btnBoth].forEach(btn => {
         btn.addEventListener('click', (e) => {
           e.stopPropagation();
           SoundFX.playPop();
-          SpeechEngine.speakEnglish(item.word);
-          setMascotMessage(`${item.word} (${item.meaning})!`);
+          SpeechEngine.speakBilingual(item.word, item.meaning);
+          setMascotMessage(`${item.word} — ${item.meaning}!`);
         });
       });
 
-      // Quick Bengali audio
-      const btnBn = card.querySelector('.listen-bn');
-      btnBn.addEventListener('click', (e) => {
+      // Slow Bilingual Audio
+      const btnSlow = card.querySelector('.listen-slow');
+      btnSlow.addEventListener('click', (e) => {
         e.stopPropagation();
         SoundFX.playPop();
-        SpeechEngine.speakBengali(`${item.meaning}`);
+        SpeechEngine.speakBilingual(item.word, item.meaning, true);
+        setMascotMessage(`${item.word} — ${item.meaning} (ধীরে ধীরে)!`);
       });
 
       DOM.cardsGrid.appendChild(card);
@@ -704,8 +720,8 @@
     updateModalUI();
     DOM.wordModal.classList.add('active');
 
-    // Auto pronounce word upon opening
-    SpeechEngine.speakEnglish(item.word);
+    // Auto pronounce word upon opening: First English, then Bengali meaning
+    SpeechEngine.speakBilingual(item.word, item.meaning);
   }
 
   function updateModalUI() {
@@ -759,8 +775,8 @@
       DOM.quizOptions.appendChild(optCard);
     });
 
-    // Voice announcement for kids
-    SpeechEngine.speakEnglish(`Where is ${correct.word}?`);
+    // Voice announcement for kids: speaks English first, then Bengali meaning
+    SpeechEngine.speakBilingual(correct.word, `${correct.meaning} কোথায়?`);
   }
 
   function handleQuizAnswer(selected, cardEl) {
@@ -779,11 +795,13 @@
       SoundFX.playFanfare();
 
       DOM.quizFeedback.innerHTML = `<span style="color:#00B894;">🎉 দারুণ! একদম সঠিক! (${correct.word} - ${correct.meaning})</span>`;
-      setMascotMessage(`সাবাশ! একদম ঠিক বলেছ: ${correct.word}! ⭐ +২ স্টার!`, true);
+      setMascotMessage(`সাবাশ! ${correct.word} মানে ${correct.meaning}! ⭐ +২ স্টার!`);
+      // Celebratory bilingual voice feedback
+      SpeechEngine.speakBilingual(correct.word, correct.meaning);
 
       setTimeout(() => {
         startQuizQuestion();
-      }, 1800);
+      }, 2000);
     } else {
       // Wrong
       cardEl.classList.add('wrong');
@@ -909,8 +927,8 @@
     cardEl.classList.add('flipped');
     state.match.flippedCards.push({ cardEl, data });
 
-    // Say the word when flipped
-    SpeechEngine.speakEnglish(data.item.word);
+    // Say English first, then Bengali meaning when flipped
+    SpeechEngine.speakBilingual(data.item.word, data.item.meaning);
 
     if (state.match.flippedCards.length === 2) {
       state.match.moves++;
@@ -987,13 +1005,8 @@
     const pct = ((state.autoplay.currentIndex + 1) / items.length) * 100;
     DOM.autoplayProgress.style.width = `${pct}%`;
 
-    // 1. Speak English word
-    await SpeechEngine.speakEnglish(item.word);
-    await new Promise(r => setTimeout(r, 400));
-
-    // 2. Speak Bengali meaning
-    await SpeechEngine.speakBengali(`${item.meaning}`);
-    await new Promise(r => setTimeout(r, 600));
+    // Speaks English first, then Bengali meaning
+    await SpeechEngine.speakBilingual(item.word, item.meaning);
 
     // Advance to next after 2.5 seconds if still playing
     if (state.autoplay.isPlaying) {
@@ -1073,20 +1086,22 @@
       if (e.target === DOM.wordModal) closeModal();
     });
 
+    if (DOM.btnModalSayBilingual) {
+      DOM.btnModalSayBilingual.addEventListener('click', () => {
+        if (currentModalItem) SpeechEngine.speakBilingual(currentModalItem.word, currentModalItem.meaning);
+      });
+    }
+
     DOM.btnModalSayEn.addEventListener('click', () => {
       if (currentModalItem) SpeechEngine.speakEnglish(currentModalItem.word);
     });
 
-    DOM.btnModalSayBn.addEventListener('click', () => {
-      if (currentModalItem) SpeechEngine.speakBengali(currentModalItem.meaning);
-    });
-
     DOM.btnModalSaySlow.addEventListener('click', () => {
-      if (currentModalItem) SpeechEngine.speakEnglish(currentModalItem.word, true);
+      if (currentModalItem) SpeechEngine.speakBilingual(currentModalItem.word, currentModalItem.meaning, true);
     });
 
     DOM.btnModalSpelling.addEventListener('click', () => {
-      if (currentModalItem) SpeechEngine.spellOut(currentModalItem.word);
+      if (currentModalItem) SpeechEngine.spellOut(currentModalItem.word, currentModalItem.meaning);
     });
 
     DOM.btnModalSaySentence.addEventListener('click', () => {
@@ -1134,7 +1149,7 @@
     // Quiz Controls
     DOM.btnQuizListen.addEventListener('click', () => {
       if (state.quiz.currentQuestion) {
-        SpeechEngine.speakEnglish(state.quiz.currentQuestion.correct.word);
+        SpeechEngine.speakBilingual(state.quiz.currentQuestion.correct.word, state.quiz.currentQuestion.correct.meaning);
       }
     });
 
@@ -1146,7 +1161,7 @@
     // Speaking Practice Controls
     DOM.btnSpeakListen.addEventListener('click', () => {
       if (state.speaking.targetItem) {
-        SpeechEngine.speakEnglish(state.speaking.targetItem.word);
+        SpeechEngine.speakBilingual(state.speaking.targetItem.word, state.speaking.targetItem.meaning);
       }
     });
 
