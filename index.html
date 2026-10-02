@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ছোটদের কথা বলা বই | Kids Interactive Learning App</title>
+  <!-- Google Fonts for playful kid typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Hind+Siliguri:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-container">
+
+    <!-- Top Navigation Header -->
+    <header class="app-header">
+      <div class="logo-area">
+        <div class="logo-icon">🎈</div>
+        <div class="logo-text">
+          <h1>টকিং কিডস বুক</h1>
+          <span class="subtitle">English & Bengali Learning Play</span>
+        </div>
+      </div>
+
+      <div class="header-stats">
+        <!-- Star / Score Bank -->
+        <div class="star-pill" title="তোমার অর্জিত স্টার">
+          <span class="star-icon">⭐</span>
+          <span id="star-count" class="star-num">0</span>
+        </div>
+
+        <!-- Sound Toggle -->
+        <button id="btn-sound-toggle" class="icon-btn" title="সাউন্ড অন/অফ">
+          <span id="sound-icon">🔊</span>
+        </button>
+
+        <!-- Settings Modal Trigger -->
+        <button id="btn-settings" class="icon-btn" title="সেটিংস">
+          <span>⚙️</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Interactive Mascot Area -->
+    <section class="mascot-banner">
+      <div class="mascot-wrapper">
+        <!-- Animated SVG Talking Mascot (Titu the friendly Bear/Panda) -->
+        <div class="mascot-avatar" id="mascot-character">
+          <div class="mascot-ears">
+            <span class="ear left"></span>
+            <span class="ear right"></span>
+          </div>
+          <div class="mascot-face">
+            <div class="mascot-eyes">
+              <span class="eye left"><span class="pupil"></span></span>
+              <span class="eye right"><span class="pupil"></span></span>
+            </div>
+            <div class="mascot-nose"></div>
+            <div class="mascot-mouth" id="mascot-mouth"></div>
+            <div class="mascot-cheeks">
+              <span class="blush left"></span>
+              <span class="blush right"></span>
+            </div>
+          </div>
+          <div class="mascot-hands">
+            <span class="hand left-hand">👋</span>
+            <span class="hand right-hand">✨</span>
+          </div>
+        </div>
+
+        <!-- Mascot Speech Bubble -->
+        <div class="speech-bubble" id="mascot-bubble">
+          <p id="mascot-message">হ্যালো বন্ধু! আমি টিটু 🐻। যেকোনো কার্ডে ট্যাপ করো, আমি সুন্দর করে পড়ে শোনাবো!</p>
+          <div class="speech-bubble-tail"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- App Navigation Modes (Tabs) -->
+    <nav class="mode-tabs">
+      <button class="mode-tab active" data-mode="cards">
+        <span class="tab-emoji">🃏</span>
+        <span class="tab-text">টকিং কার্ডস</span>
+      </button>
+      <button class="mode-tab" data-mode="quiz">
+        <span class="tab-emoji">🎯</span>
+        <span class="tab-text">শুনে খোঁজো গেম</span>
+      </button>
+      <button class="mode-tab" data-mode="speak">
+        <span class="tab-emoji">🎤</span>
+        <span class="tab-text">তুমিও বলো</span>
+      </button>
+      <button class="mode-tab" data-mode="match">
+        <span class="tab-emoji">🧩</span>
+        <span class="tab-text">জোড়া মেলাও</span>
+      </button>
+      <button class="mode-tab" data-mode="autoplay">
+        <span class="tab-emoji">▶️</span>
+        <span class="tab-text">অটো প্লে</span>
+      </button>
+    </nav>
+
+    <!-- Category Selector Pill Carousel -->
+    <section class="category-section" id="category-section">
+      <div class="category-scroll" id="category-pills">
+        <!-- Rendered dynamically -->
+      </div>
+    </section>
+
+    <!-- Main Content Area (Switches based on mode) -->
+    <main class="main-content">
+
+      <!-- ================= MODE 1: TALKING FLASHCARDS ================= -->
+      <section id="view-cards" class="view-panel active">
+        <div class="cards-header">
+          <div class="category-info">
+            <span id="current-cat-icon">🍎</span>
+            <div>
+              <h2 id="current-cat-title">ফলমূল (Fruits)</h2>
+              <span id="current-cat-count" class="count-badge">১৪টি শব্দ</span>
+            </div>
+          </div>
+          <div class="search-box">
+            <input type="text" id="word-search" placeholder="🔍 শব্দ খুঁজুন (Apple, আম...)" autocomplete="off">
+          </div>
+        </div>
+
+        <!-- Word Cards Grid -->
+        <div class="cards-grid" id="cards-grid">
+          <!-- Dynamically populated -->
+        </div>
+      </section>
+
+      <!-- ================= MODE 2: LISTEN & FIND QUIZ ================= -->
+      <section id="view-quiz" class="view-panel">
+        <div class="quiz-container">
+          <div class="quiz-top-bar">
+            <div class="streak-badge">
+              <span>🔥 স্ট্রিক: </span>
+              <strong id="quiz-streak">0</strong>
+            </div>
+            <div class="score-badge">
+              <span>স্কোর: </span>
+              <strong id="quiz-score">0 / 0</strong>
+            </div>
+            <button id="btn-quiz-skip" class="pill-btn secondary">অন্য প্রশ্ন ⏭️</button>
+          </div>
+
+          <div class="quiz-prompt-card">
+            <button id="btn-quiz-listen" class="quiz-speaker-btn pulse-glow" title="প্রশ্ন আবার শোনো">
+              <span class="speaker-icon">🔊</span>
+              <span class="speaker-text">আবার শোনো!</span>
+            </button>
+            <h3 id="quiz-question-text" class="quiz-question">নিচের কোনটি "Apple"?</h3>
+            <p id="quiz-hint" class="quiz-hint">ছবিতে ট্যাপ করে সঠিক উত্তর বেছে নাও!</p>
+          </div>
+
+          <div class="quiz-options-grid" id="quiz-options">
+            <!-- 4 Options rendered dynamically -->
+          </div>
+
+          <div id="quiz-feedback" class="quiz-feedback"></div>
+        </div>
+      </section>
+
+      <!-- ================= MODE 3: SPEAK TO MASCOT ================= -->
+      <section id="view-speak" class="view-panel">
+        <div class="speak-container">
+          <div class="speak-card" id="speak-target-card">
+            <div class="speak-img-wrap">
+              <img id="speak-target-img" src="images/apple.png" alt="Target Word">
+            </div>
+            <div class="speak-word-details">
+              <h2 id="speak-target-word">Apple</h2>
+              <p class="speak-pron-bangla" id="speak-target-pron">উচ্চারণ: অ্যাপল</p>
+              <p class="speak-meaning-bangla" id="speak-target-meaning">অর্থ: আপেল</p>
+            </div>
+          </div>
+
+          <div class="speak-action-zone">
+            <button id="btn-speak-listen" class="action-bubble-btn">
+              <span>🔊</span>
+              <span>আগে শোনো</span>
+            </button>
+
+            <!-- Big Mic Button -->
+            <button id="btn-mic-listen" class="big-mic-btn pulse-idle">
+              <span class="mic-icon">🎙️</span>
+              <span class="mic-label">মাইকে বলো</span>
+            </button>
+
+            <button id="btn-speak-next" class="action-bubble-btn">
+              <span>পড়ব অন্যটি ➡️</span>
+            </button>
+          </div>
+
+          <div class="speech-status-bar" id="speech-status">
+            মাইক বাটনে চাপ দিয়ে ইংরেজিতে বলো!
+          </div>
+
+          <div class="speech-result-box" id="speech-result-box">
+            <!-- Shows recognized speech with match evaluation -->
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= MODE 4: MEMORY MATCH ================= -->
+      <section id="view-match" class="view-panel">
+        <div class="match-container">
+          <div class="match-top-bar">
+            <div class="moves-badge">
+              <span>চাল: </span><strong id="match-moves">0</strong>
+            </div>
+            <div class="matched-badge">
+              <span>মেলেছে: </span><strong id="match-pairs">0 / 6</strong>
+            </div>
+            <button id="btn-match-restart" class="pill-btn primary">নতুন খেলা 🔄</button>
+          </div>
+
+          <div class="match-grid" id="match-grid">
+            <!-- 12 memory cards -->
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= MODE 5: AUTOPLAY STORYBOOK ================= -->
+      <section id="view-autoplay" class="view-panel">
+        <div class="autoplay-container">
+          <div class="autoplay-stage" id="autoplay-stage">
+            <div class="autoplay-card" id="autoplay-card">
+              <div class="autoplay-image-frame">
+                <img id="autoplay-img" src="images/apple.png" alt="Autoplay Word">
+              </div>
+              <div class="autoplay-info">
+                <span class="autoplay-tag" id="autoplay-cat">Fruits | ফলমূল</span>
+                <h1 id="autoplay-word">Apple</h1>
+                <h3 id="autoplay-pron">উচ্চারণ: অ্যাপল</h3>
+                <h2 id="autoplay-meaning">অর্থ: আপেল</h2>
+                <div class="autoplay-sentence-bubble">
+                  <span class="sentence-icon">💡</span>
+                  <p id="autoplay-sentence">An apple a day keeps the doctor away!</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="autoplay-controls">
+            <button id="btn-autoplay-prev" class="ctrl-btn" title="পূর্ববর্তী">⏮️</button>
+            <button id="btn-autoplay-playpause" class="ctrl-btn main-play" title="প্লে/পজ">⏸️</button>
+            <button id="btn-autoplay-next" class="ctrl-btn" title="পরবর্তী">⏭️</button>
+          </div>
+          <div class="autoplay-progress-bar">
+            <div class="autoplay-progress-fill" id="autoplay-progress"></div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Word Detail Interactive Modal (When a card is tapped) -->
+    <div class="modal-overlay" id="word-modal">
+      <div class="modal-card">
+        <button class="modal-close-btn" id="btn-modal-close" title="বন্ধ করো">✖</button>
+
+        <div class="modal-header">
+          <span class="modal-cat-tag" id="modal-cat">Fruits</span>
+        </div>
+
+        <div class="modal-body">
+          <div class="modal-image-container">
+            <img id="modal-img" src="images/apple.png" alt="Word Illustration">
+            <button id="btn-modal-repeat-mic" class="corner-mic-btn" title="তুমিও বলো">🎙️</button>
+          </div>
+
+          <div class="modal-text-content">
+            <h1 id="modal-word">Apple</h1>
+            <div class="pron-badge">
+              <span class="badge-label">বাংলা উচ্চারণ:</span>
+              <strong id="modal-pron">অ্যাপল</strong>
+            </div>
+            <div class="meaning-badge">
+              <span class="badge-label">বাংলা অর্থ:</span>
+              <strong id="modal-meaning">আপেল</strong>
+            </div>
+
+            <!-- Example sentence -->
+            <div class="sentence-card">
+              <span class="sentence-lbl">মজার বাক্য:</span>
+              <p id="modal-sentence">"An apple a day keeps the doctor away!"</p>
+              <button id="btn-modal-say-sentence" class="icon-circle-btn" title="বাক্য শোনো">🔊</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Voice Action Buttons -->
+        <div class="modal-actions">
+          <button id="btn-modal-say-en" class="voice-btn primary">
+            <span class="btn-icon">🔊</span>
+            <span class="btn-title">English এ শোনো</span>
+          </button>
+
+          <button id="btn-modal-say-bn" class="voice-btn secondary">
+            <span class="btn-icon">🗣️</span>
+            <span class="btn-title">বাংলায় শোনো</span>
+          </button>
+
+          <button id="btn-modal-say-slow" class="voice-btn slow">
+            <span class="btn-icon">🐢</span>
+            <span class="btn-title">ধীরে ধীরে</span>
+          </button>
+
+          <button id="btn-modal-spelling" class="voice-btn spell">
+            <span class="btn-icon">🔤</span>
+            <span class="btn-title">বানান করে</span>
+          </button>
+        </div>
+
+        <!-- Pronunciation Practice Bar in Modal -->
+        <div class="modal-mic-section">
+          <button id="btn-modal-test-mic" class="pill-btn mic-action">
+            <span>🎙️ মুখে বলো: </span>
+            <strong id="modal-mic-target">"Apple"</strong>
+          </button>
+          <div id="modal-mic-feedback" class="modal-mic-feedback"></div>
+        </div>
+
+        <!-- Modal Prev / Next Navigation -->
+        <div class="modal-nav">
+          <button id="btn-modal-prev" class="nav-arrow">⬅️ আগেরটি</button>
+          <span id="modal-counter">১ / ১৪</span>
+          <button id="btn-modal-next" class="nav-arrow">পরেরটি ➡️</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div class="modal-overlay" id="settings-modal">
+      <div class="modal-card settings-card">
+        <button class="modal-close-btn" id="btn-settings-close">✖</button>
+        <h2>⚙️ শব্দ ও ভয়েস সেটিংস</h2>
+
+        <div class="setting-group">
+          <label>🗣️ ভয়েসের গতি (Voice Speed):</label>
+          <div class="range-wrap">
+            <span>🐢</span>
+            <input type="range" id="setting-rate" min="0.6" max="1.3" step="0.1" value="0.9">
+            <span>🐇</span>
+          </div>
+        </div>
+
+        <div class="setting-group">
+          <label>🎵 ভয়েসের সুর (Pitch):</label>
+          <div class="range-wrap">
+            <span>🦁</span>
+            <input type="range" id="setting-pitch" min="0.8" max="1.6" step="0.1" value="1.2">
+            <span>🐥</span>
+          </div>
+        </div>
+
+        <div class="setting-group">
+          <label>🌐 English Voice:</label>
+          <select id="setting-voice-en" class="custom-select"></select>
+        </div>
+
+        <div class="setting-group">
+          <label>🇧🇩 Bengali Voice:</label>
+          <select id="setting-voice-bn" class="custom-select"></select>
+        </div>
+
+        <div class="setting-actions">
+          <button id="btn-test-voice" class="pill-btn primary">ভয়েস টেস্ট করো 🔊</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Celebration Confetti Canvas -->
+    <canvas id="confetti-canvas"></canvas>
+
+  </div>
+
+  <!-- Load Vocabulary Data -->
+  <script src="data/vocabulary.js"></script>
+  <!-- Load App Logic -->
+  <script src="app.js"></script>
+</body>
+</html>
