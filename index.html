@@ -2,8 +2,17 @@
 <html lang="bn">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>ছোটদের কথা বলা বই | Kids Interactive Learning App</title>
+  
+  <!-- PWA & Mobile Standalone App Support -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#FF7A00">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="TalkingBook">
+  <link rel="apple-touch-icon" href="images/icon-192.png">
+
   <!-- Google Fonts for playful kid typography -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -12,6 +21,21 @@
 </head>
 <body>
   <div class="app-container">
+
+    <!-- PWA Install Floating Banner -->
+    <div id="pwa-install-banner" class="pwa-install-banner" style="display: none;">
+      <div class="pwa-banner-content">
+        <span class="pwa-banner-icon">📱</span>
+        <div>
+          <strong>অ্যাপটি ফোনে ইনস্টল করুন!</strong>
+          <p>ফুল-স্ক্রিন মোডে সরাসরি অ্যাপের মতো ব্যবহার করুন</p>
+        </div>
+      </div>
+      <div class="pwa-banner-actions">
+        <button id="btn-pwa-install" class="pwa-btn-install">ইনস্টল 🚀</button>
+        <button id="btn-pwa-dismiss" class="pwa-btn-dismiss" title="পরে করব">✖</button>
+      </div>
+    </div>
 
     <!-- Top Navigation Header -->
     <header class="app-header">
@@ -24,6 +48,11 @@
       </div>
 
       <div class="header-stats">
+        <!-- Install App Trigger in Header -->
+        <button id="btn-install-app" class="icon-btn pwa-install-trigger" title="ফোনে ইনস্টল করুন" style="display: none;">
+          <span>📲</span>
+        </button>
+
         <!-- Star / Score Bank -->
         <div class="star-pill" title="তোমার অর্জিত স্টার">
           <span class="star-icon">⭐</span>

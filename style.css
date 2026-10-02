@@ -2672,3 +2672,93 @@ body {
     font-size: 12px;
   }
 }
+
+/* ==========================================================================
+   PWA INSTALL FLOATING BANNER
+   ========================================================================== */
+.pwa-install-banner {
+  background: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%);
+  color: white;
+  border-radius: 20px;
+  padding: 12px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  box-shadow: 0 8px 24px rgba(255, 107, 107, 0.35);
+  border: 3px solid #FFA8A8;
+  animation: slideDownBanner 0.4s var(--bounce-cubic);
+  margin-bottom: 8px;
+}
+
+@keyframes slideDownBanner {
+  0% { transform: translateY(-20px); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+.pwa-banner-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.pwa-banner-icon {
+  font-size: 32px;
+  flex-shrink: 0;
+}
+
+.pwa-banner-content strong {
+  font-size: 16px;
+  font-weight: 800;
+  display: block;
+}
+
+.pwa-banner-content p {
+  font-size: 13px;
+  font-weight: 600;
+  opacity: 0.95;
+}
+
+.pwa-banner-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.pwa-btn-install {
+  background: white;
+  color: #D9480F;
+  border: none;
+  font-size: 14px;
+  font-weight: 800;
+  padding: 8px 18px;
+  border-radius: 999px;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  transition: all 0.2s var(--bounce-cubic);
+}
+
+.pwa-btn-install:hover {
+  transform: scale(1.06);
+  background: #FFF9DB;
+}
+
+.pwa-btn-dismiss {
+  background: rgba(0, 0, 0, 0.15);
+  color: white;
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+
+.pwa-btn-dismiss:hover {
+  background: rgba(0, 0, 0, 0.3);
+}

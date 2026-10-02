@@ -1680,12 +1680,74 @@
     });
   }
 
+  // Service Worker & PWA Install Manager
+  let deferredPrompt = null;
+  function initPWA() {
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').then((reg) => {
+        console.log('Service Worker registered successfully:', reg.scope);
+      }).catch((err) => {
+        console.warn('Service Worker registration failed:', err);
+      });
+    }
+
+    const pwaBanner = document.getElementById('pwa-install-banner');
+    const btnPwaInstall = document.getElementById('btn-pwa-install');
+    const btnPwaDismiss = document.getElementById('btn-pwa-dismiss');
+    const btnInstallHeader = document.getElementById('btn-install-app');
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+
+      if (btnInstallHeader) btnInstallHeader.style.display = 'flex';
+      if (pwaBanner && !sessionStorage.getItem('pwa_dismissed')) {
+        pwaBanner.style.display = 'flex';
+      }
+    });
+
+    const triggerInstall = async () => {
+      if (!deferredPrompt) {
+        alert('অ্যাপটি ফোনে ইনস্টল করতে আপনার ব্রাউজারের থ্রি-ডট (⋮) মেনু থেকে "Install app" অথবা "Add to Home screen" চাপুন!');
+        return;
+      }
+      deferredPrompt.prompt();
+      const choice = await deferredPrompt.userChoice;
+      if (choice && choice.outcome === 'accepted') {
+        SoundFX.playCheer();
+        Confetti.fire(60);
+      }
+      deferredPrompt = null;
+      if (pwaBanner) pwaBanner.style.display = 'none';
+      if (btnInstallHeader) btnInstallHeader.style.display = 'none';
+    };
+
+    if (btnPwaInstall) btnPwaInstall.addEventListener('click', triggerInstall);
+    if (btnInstallHeader) btnInstallHeader.addEventListener('click', triggerInstall);
+
+    if (btnPwaDismiss) {
+      btnPwaDismiss.addEventListener('click', () => {
+        if (pwaBanner) pwaBanner.style.display = 'none';
+        sessionStorage.setItem('pwa_dismissed', '1');
+      });
+    }
+
+    window.addEventListener('appinstalled', () => {
+      if (pwaBanner) pwaBanner.style.display = 'none';
+      if (btnInstallHeader) btnInstallHeader.style.display = 'none';
+      deferredPrompt = null;
+      SoundFX.playCheer();
+      Confetti.fire(80);
+    });
+  }
+
   // App Initialization
   function init() {
     SoundFX.init();
     SpeechEngine.init();
     SpeechRecognizer.init();
     Confetti.init();
+    initPWA();
 
     DOM.starCount.textContent = state.stars;
 
