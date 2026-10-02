@@ -160,89 +160,94 @@
             <span class="jumbo-counter" id="jumbo-counter">১ / ১৪</span>
           </div>
 
-          <div class="jumbo-stage-main">
-            <!-- Left: Jumbo 3D Visual with Glowing Pedestal -->
-            <div class="jumbo-3d-pedestal-wrap">
-              <div class="jumbo-3d-glow"></div>
-              <div class="jumbo-3d-pedestal">
-                <img id="jumbo-img" src="images/apple.png" alt="Apple 3D" class="jumbo-3d-img">
-              </div>
-              <button id="btn-jumbo-tap-talk" class="jumbo-tap-talk-hint" title="কথা শুনুন">
-                <span>🔊 ট্যাপ করো কথা শুনতে</span>
-              </button>
-            </div>
-
-            <!-- Right: Content & Bilingual Audio Controls -->
-            <div class="jumbo-stage-content">
-              <div class="jumbo-word-header">
-                <h1 id="jumbo-word" class="jumbo-word-title">Apple</h1>
-                <span class="jumbo-spelling-pill" id="jumbo-spelling-pill">A • P • P • L • E</span>
-              </div>
-              
-              <div class="jumbo-pron-meaning-row">
-                <div class="jumbo-badge-item pron">
-                  <span class="jumbo-badge-lbl">উচ্চারণ</span>
-                  <strong id="jumbo-pron">অ্যাপল</strong>
-                </div>
-                <div class="jumbo-badge-item meaning">
-                  <span class="jumbo-badge-lbl">বাংলা অর্থ</span>
-                  <strong id="jumbo-meaning">আপেল</strong>
-                </div>
-              </div>
-
-              <div class="jumbo-sentence-box">
-                <span class="sentence-icon">💡</span>
-                <p id="jumbo-sentence">An apple a day keeps the doctor away!</p>
-                <button id="btn-jumbo-sentence" class="icon-circle-btn sm" title="বাক্য শোনো">🔊</button>
-              </div>
-
-              <!-- Main Voice & Interactive Actions -->
-              <div class="jumbo-voice-buttons">
-                <button id="btn-jumbo-bilingual" class="jumbo-btn primary">
-                  <span class="btn-emoji">🔊</span>
-                  <span class="btn-labels">
-                    <strong>শোনো (English + বাংলা)</strong>
-                    <small>আগে ইংরেজি, তারপর বাংলা অর্থ</small>
-                  </span>
-                </button>
-                <button id="btn-jumbo-slow" class="jumbo-btn slow">
-                  <span class="btn-emoji">🐢</span>
-                  <span class="btn-labels">
-                    <strong>ধীরে শোনো</strong>
-                    <small>আস্তে আস্তে বলো</small>
-                  </span>
-                </button>
-                <button id="btn-jumbo-spell" class="jumbo-btn spell">
-                  <span class="btn-emoji">🔤</span>
-                  <span class="btn-labels">
-                    <strong>বানান করে</strong>
-                    <small>A-B-C অক্ষর ভাঙা</small>
-                  </span>
-                </button>
-                <button id="btn-jumbo-mic" class="jumbo-btn mic">
-                  <span class="btn-emoji">🎙️</span>
-                  <span class="btn-labels">
-                    <strong>তুমিও বলো</strong>
-                    <small>মুখে বলে স্টার জেতো ⭐</small>
-                  </span>
-                </button>
-              </div>
-
-              <!-- Live mic response bubble inside Jumbo stage -->
-              <div id="jumbo-mic-feedback" class="jumbo-mic-feedback" style="display: none;"></div>
-            </div>
-          </div>
-
-          <!-- Bottom Navigation Bar for Jumbo Stage -->
-          <div class="jumbo-nav-bar">
-            <button id="btn-jumbo-prev" class="jumbo-nav-btn" title="আগের শব্দ">
-              <span>⬅️ আগেরটি</span>
+          <div class="jumbo-showcase-container">
+            <!-- Left Side Arrow for Little Fingers -->
+            <button id="btn-jumbo-prev" class="jumbo-side-arrow prev" title="আগের ছবি">
+              <span>⬅️</span>
             </button>
-            <div class="jumbo-quick-shortcuts">
-              <span class="jumbo-guide-text">👇 নিচের কার্ডগুলোতে ক্লিক করলেও এখানে ৩ডি বড় হয়ে আসবে!</span>
+
+            <!-- Center Showcase -->
+            <div class="jumbo-showcase-center">
+              <!-- Giant 3D Visual with Glowing Pedestal -->
+              <div class="jumbo-3d-pedestal-wrap" id="jumbo-pedestal-wrap">
+                <div class="jumbo-3d-glow"></div>
+                <div class="jumbo-3d-pedestal" id="jumbo-pedestal" title="ছবিতে চাপ দিলে কথা বলবে!">
+                  <img id="jumbo-img" src="images/apple.png" alt="Apple 3D" class="jumbo-3d-img">
+                </div>
+                <button id="btn-jumbo-tap-talk" class="jumbo-tap-talk-hint" title="কথা শুনুন">
+                  <span>🔊 ছবিতে ট্যাপ করো কথা শুনতে ✨</span>
+                </button>
+              </div>
+
+              <!-- Giant Word Title & Meaning Details -->
+              <div class="jumbo-word-showcase">
+                <h1 id="jumbo-word" class="jumbo-word-title">Apple</h1>
+                <div class="jumbo-spelling-pill" id="jumbo-spelling-pill">A • P • P • L • E</div>
+                
+                <div class="jumbo-bilingual-badges">
+                  <div class="jumbo-badge-item meaning">
+                    <span class="jumbo-badge-lbl">বাংলা অর্থ</span>
+                    <strong id="jumbo-meaning">আপেল</strong>
+                  </div>
+                  <div class="jumbo-badge-item pron">
+                    <span class="jumbo-badge-lbl">উচ্চারণ</span>
+                    <strong id="jumbo-pron">অ্যাপল</strong>
+                  </div>
+                </div>
+
+                <div class="jumbo-sentence-box">
+                  <span class="sentence-icon">💡</span>
+                  <p id="jumbo-sentence">An apple a day keeps the doctor away!</p>
+                  <button id="btn-jumbo-sentence" class="icon-circle-btn sm" title="বাক্য শোনো">🔊</button>
+                </div>
+
+                <!-- Main Voice & Kid Action Buttons -->
+                <div class="jumbo-voice-buttons">
+                  <button id="btn-jumbo-bilingual" class="jumbo-btn primary">
+                    <span class="btn-emoji">🔊</span>
+                    <span class="btn-labels">
+                      <strong>শোনো (English ➡️ বাংলা)</strong>
+                      <small>আগে ইংরেজি, তারপর বাংলা অর্থ</small>
+                    </span>
+                  </button>
+                  <button id="btn-jumbo-slow" class="jumbo-btn slow">
+                    <span class="btn-emoji">🐢</span>
+                    <span class="btn-labels">
+                      <strong>ধীরে সুরে বলো</strong>
+                      <small>আস্তে আস্তে সুর করে বলো</small>
+                    </span>
+                  </button>
+                  <button id="btn-jumbo-spell" class="jumbo-btn spell">
+                    <span class="btn-emoji">🔤</span>
+                    <span class="btn-labels">
+                      <strong>বানান করে</strong>
+                      <small>A-B-C অক্ষর ভাঙা</small>
+                    </span>
+                  </button>
+                  <button id="btn-jumbo-autoplay" class="jumbo-btn autoplay">
+                    <span class="btn-emoji">▶️</span>
+                    <span class="btn-labels">
+                      <strong>অটো প্লে</strong>
+                      <small>একের পর এক শুনো</small>
+                    </span>
+                  </button>
+                  <button id="btn-jumbo-mic" class="jumbo-btn mic">
+                    <span class="btn-emoji">🎙️</span>
+                    <span class="btn-labels">
+                      <strong>তুমিও বলো</strong>
+                      <small>মুখে বলে স্টার জেতো ⭐</small>
+                    </span>
+                  </button>
+                </div>
+
+                <!-- Live mic response bubble inside Jumbo stage -->
+                <div id="jumbo-mic-feedback" class="jumbo-mic-feedback" style="display: none;"></div>
+              </div>
             </div>
-            <button id="btn-jumbo-next" class="jumbo-nav-btn primary" title="পরের শব্দ">
-              <span>পরেরটি ➡️</span>
+
+            <!-- Right Side Arrow for Little Fingers -->
+            <button id="btn-jumbo-next" class="jumbo-side-arrow next" title="পরের ছবি">
+              <span>➡️</span>
             </button>
           </div>
         </div>

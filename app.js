@@ -58,10 +58,10 @@
       timer: null
     },
 
-    // Voice Settings
+    // Voice Settings (Kid-like, slow, sing-song melodic learning)
     settings: {
-      rate: 0.9,
-      pitch: 1.2,
+      rate: 0.72,
+      pitch: 1.38,
       voiceEn: null,
       voiceBn: null
     }
@@ -105,6 +105,7 @@
     jumboStage: document.getElementById('jumbo-3d-stage'),
     jumboCatBadge: document.getElementById('jumbo-cat-badge'),
     jumboCounter: document.getElementById('jumbo-counter'),
+    jumboPedestal: document.getElementById('jumbo-pedestal'),
     jumboImg: document.getElementById('jumbo-img'),
     btnJumboTapTalk: document.getElementById('btn-jumbo-tap-talk'),
     jumboWord: document.getElementById('jumbo-word'),
@@ -116,6 +117,7 @@
     btnJumboBilingual: document.getElementById('btn-jumbo-bilingual'),
     btnJumboSlow: document.getElementById('btn-jumbo-slow'),
     btnJumboSpell: document.getElementById('btn-jumbo-spell'),
+    btnJumboAutoplay: document.getElementById('btn-jumbo-autoplay'),
     btnJumboMic: document.getElementById('btn-jumbo-mic'),
     jumboMicFeedback: document.getElementById('jumbo-mic-feedback'),
     btnJumboPrev: document.getElementById('btn-jumbo-prev'),
@@ -412,23 +414,30 @@
       });
     },
 
-    speakEnglish(word, slow = false) {
-      const rate = slow ? 0.55 : state.settings.rate;
-      return this.speak(word, { lang: 'en-US', rate, voice: state.settings.voiceEn });
+    speakEnglish(word, slow = true) {
+      const rate = slow ? 0.68 : 0.76;
+      const pitch = 1.38; // Sweet, bright kid tone
+      return this.speak(word, { lang: 'en-US', rate, pitch, voice: state.settings.voiceEn });
     },
 
-    speakBengali(text, slow = false) {
-      const rate = slow ? 0.65 : state.settings.rate;
-      return this.speak(text, { lang: 'bn-BD', rate, voice: state.settings.voiceBn });
+    speakBengali(text, slow = true) {
+      const rate = slow ? 0.66 : 0.74;
+      const pitch = 1.32; // Melodic, affectionate child-friendly tone
+      return this.speak(text, { lang: 'bn-BD', rate, pitch, voice: state.settings.voiceBn });
     },
 
-    async speakBilingual(word, meaning, slow = false) {
+    async speakBilingual(word, meaning, slow = true) {
       if (!this.synth) return;
-      // 1. First speak English
+      // 1. First speak English in clear, slow child-like voice
       await this.speakEnglish(word, slow);
-      // Brief natural pause for children to absorb the sound
-      await new Promise(r => setTimeout(r, 400));
-      // 2. Then speak Bengali meaning
+
+      // Play soft melodic transition sparkle chime between languages
+      SoundFX.playSparkle();
+
+      // Rhythmic musical pause (650ms) so child can learn in a sing-song way
+      await new Promise(r => setTimeout(r, 650));
+
+      // 2. Then speak Bengali meaning in sweet melodic child voice
       await this.speakBengali(meaning, slow);
     },
 
@@ -845,6 +854,9 @@
     if (DOM.jumboImg) {
       DOM.jumboImg.src = item.image;
       DOM.jumboImg.alt = `${item.word} 3D`;
+      DOM.jumboImg.classList.remove('jumbo-pop-anim');
+      void DOM.jumboImg.offsetWidth;
+      DOM.jumboImg.classList.add('jumbo-pop-anim');
     }
     if (DOM.jumboWord) {
       DOM.jumboWord.textContent = item.word;
@@ -1408,17 +1420,37 @@
       DOM.btnJumboTapTalk.addEventListener('click', () => {
         if (state.currentJumboItem) {
           SoundFX.playPop();
-          SpeechEngine.speakBilingual(state.currentJumboItem.word, state.currentJumboItem.meaning);
+          Confetti.fire(35);
+          SpeechEngine.speakBilingual(state.currentJumboItem.word, state.currentJumboItem.meaning, true);
+        }
+      });
+    }
+
+    if (DOM.jumboPedestal) {
+      DOM.jumboPedestal.addEventListener('click', () => {
+        if (state.currentJumboItem) {
+          SoundFX.playPop();
+          Confetti.fire(40);
+          SpeechEngine.speakBilingual(state.currentJumboItem.word, state.currentJumboItem.meaning, true);
         }
       });
     }
 
     if (DOM.jumboImg) {
-      DOM.jumboImg.addEventListener('click', () => {
+      DOM.jumboImg.addEventListener('click', (e) => {
+        e.stopPropagation();
         if (state.currentJumboItem) {
-          SoundFX.playSparkle();
-          SpeechEngine.speakBilingual(state.currentJumboItem.word, state.currentJumboItem.meaning);
+          SoundFX.playPop();
+          Confetti.fire(40);
+          SpeechEngine.speakBilingual(state.currentJumboItem.word, state.currentJumboItem.meaning, true);
         }
+      });
+    }
+
+    if (DOM.btnJumboAutoplay) {
+      DOM.btnJumboAutoplay.addEventListener('click', () => {
+        SoundFX.playPop();
+        switchMode('autoplay');
       });
     }
 
