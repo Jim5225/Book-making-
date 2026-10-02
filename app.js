@@ -19,6 +19,8 @@
     allCategories: window.VOCABULARY_DATA || [],
     currentCategory: 'fruits',
     currentWordIndex: 0,
+    currentJumboItem: null,
+    currentJumboIndex: 0,
     searchQuery: '',
     stars: parseInt(localStorage.getItem('kids_stars') || '0', 10),
     soundEnabled: true,
@@ -89,6 +91,26 @@
     currentCatTitle: document.getElementById('current-cat-title'),
     currentCatCount: document.getElementById('current-cat-count'),
     wordSearch: document.getElementById('word-search'),
+
+    // Jumbo 3D Stage
+    jumboStage: document.getElementById('jumbo-3d-stage'),
+    jumboCatBadge: document.getElementById('jumbo-cat-badge'),
+    jumboCounter: document.getElementById('jumbo-counter'),
+    jumboImg: document.getElementById('jumbo-img'),
+    btnJumboTapTalk: document.getElementById('btn-jumbo-tap-talk'),
+    jumboWord: document.getElementById('jumbo-word'),
+    jumboSpellingPill: document.getElementById('jumbo-spelling-pill'),
+    jumboPron: document.getElementById('jumbo-pron'),
+    jumboMeaning: document.getElementById('jumbo-meaning'),
+    jumboSentence: document.getElementById('jumbo-sentence'),
+    btnJumboSentence: document.getElementById('btn-jumbo-sentence'),
+    btnJumboBilingual: document.getElementById('btn-jumbo-bilingual'),
+    btnJumboSlow: document.getElementById('btn-jumbo-slow'),
+    btnJumboSpell: document.getElementById('btn-jumbo-spell'),
+    btnJumboMic: document.getElementById('btn-jumbo-mic'),
+    jumboMicFeedback: document.getElementById('jumbo-mic-feedback'),
+    btnJumboPrev: document.getElementById('btn-jumbo-prev'),
+    btnJumboNext: document.getElementById('btn-jumbo-next'),
 
     // Modal: Word Details
     wordModal: document.getElementById('word-modal'),
@@ -617,6 +639,11 @@
     }
 
     renderCards();
+    const currentItems = getCurrentItems();
+    if (currentItems.length > 0) {
+      updateJumboStage(currentItems[0], false);
+    }
+
     if (state.currentMode === 'quiz') startQuizQuestion();
     if (state.currentMode === 'speak') loadSpeakingTarget();
     if (state.currentMode === 'match') setupMemoryMatch();
@@ -624,6 +651,120 @@
       state.autoplay.currentIndex = 0;
       playAutoplaySlide();
     }
+  }
+
+  // ==================== JUMBO 3D STAGE CONTROLLER ====================
+  function toBengaliDigits(num) {
+    const bnDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
+    return String(num).replace(/[0-9]/g, d => bnDigits[parseInt(d, 10)]);
+  }
+
+  function updateJumboStage(item, autoSpeak = false) {
+    if (!item) return;
+    state.currentJumboItem = item;
+
+    const items = getCurrentItems();
+    const idx = items.findIndex(i => i.id === item.id);
+    state.currentJumboIndex = idx >= 0 ? idx : 0;
+
+    let catName = 'ফলমূল';
+    let catIcon = '🍎';
+    const cat = state.allCategories.find(c => c.items.some(i => i.id === item.id));
+    if (cat) {
+      catName = `${cat.titleBn} (${cat.title})`;
+      catIcon = cat.icon;
+    }
+
+    if (DOM.jumboCatBadge) {
+      DOM.jumboCatBadge.textContent = `${catIcon} ${catName}`;
+    }
+    if (DOM.jumboCounter) {
+      DOM.jumboCounter.textContent = `${toBengaliDigits(state.currentJumboIndex + 1)} / ${toBengaliDigits(items.length)}`;
+    }
+    if (DOM.jumboImg) {
+      DOM.jumboImg.src = item.image;
+      DOM.jumboImg.alt = `${item.word} 3D`;
+    }
+    if (DOM.jumboWord) {
+      DOM.jumboWord.textContent = item.word;
+    }
+    if (DOM.jumboSpellingPill) {
+      DOM.jumboSpellingPill.textContent = item.word.toUpperCase().split('').join(' • ');
+    }
+    if (DOM.jumboPron) {
+      DOM.jumboPron.textContent = item.pron;
+    }
+    if (DOM.jumboMeaning) {
+      DOM.jumboMeaning.textContent = item.meaning;
+    }
+    if (DOM.jumboSentence) {
+      DOM.jumboSentence.textContent = item.sentence || `Look at this ${item.word}!`;
+    }
+
+    // Reset mic feedback in Jumbo stage
+    if (DOM.jumboMicFeedback) {
+      DOM.jumboMicFeedback.style.display = 'none';
+      DOM.jumboMicFeedback.textContent = '';
+    }
+
+    // Update active highlight on cards grid
+    document.querySelectorAll('.word-card').forEach(c => {
+      if (c.dataset.wordId === item.id) {
+        c.classList.add('is-jumbo-active');
+      } else {
+        c.classList.remove('is-jumbo-active');
+      }
+    });
+
+    if (autoSpeak) {
+      SpeechEngine.speakBilingual(item.word, item.meaning);
+      setMascotMessage(`${item.word} — ${item.meaning}!`);
+    }
+  }
+
+  function handleJumboPrev() {
+    const items = getCurrentItems();
+    if (!items.length) return;
+    SoundFX.playPop();
+    state.currentJumboIndex = (state.currentJumboIndex - 1 + items.length) % items.length;
+    updateJumboStage(items[state.currentJumboIndex], true);
+  }
+
+  function handleJumboNext() {
+    const items = getCurrentItems();
+    if (!items.length) return;
+    SoundFX.playPop();
+    state.currentJumboIndex = (state.currentJumboIndex + 1) % items.length;
+    updateJumboStage(items[state.currentJumboIndex], true);
+  }
+
+  function handleJumboMic() {
+    if (!state.currentJumboItem) return;
+    const target = state.currentJumboItem.word;
+    SoundFX.playPop();
+    if (DOM.jumboMicFeedback) {
+      DOM.jumboMicFeedback.style.display = 'block';
+      DOM.jumboMicFeedback.innerHTML = `🎙️ শুনছি... মুখে বলো: <strong>"${target}"</strong>!`;
+    }
+
+    SpeechRecognizer.startListening(
+      target,
+      (spoken, isMatch) => {
+        if (!DOM.jumboMicFeedback) return;
+        if (isMatch) {
+          SoundFX.playFanfare();
+          Confetti.fire(60);
+          updateStars(2);
+          DOM.jumboMicFeedback.innerHTML = `<span style="color:#10B981;">🎉 দারুণ হয়েছে! তুমি বলেছ: <strong>"${spoken}"</strong>! ⭐ +২ স্টার</span>`;
+          setMascotMessage(`সাবাশ! অসাধারণ উচ্চারণ করেছ: "${target}"! ⭐`, false);
+        } else {
+          SoundFX.playBoing();
+          DOM.jumboMicFeedback.innerHTML = `<span style="color:#EF4444;">🙂 তুমি বলেছ: <em>"${spoken}"</em>। আবার সুন্দর করে বলো: <strong>"${target}"</strong>!</span>`;
+          setMascotMessage(`আবার চেষ্টা করো বন্ধু! বলো "${target}" 🐻`, false);
+        }
+      },
+      () => {}
+    );
   }
 
   // Render flashcards grid
@@ -651,6 +792,10 @@
     filtered.forEach((item, index) => {
       const card = document.createElement('div');
       card.className = 'word-card';
+      card.dataset.wordId = item.id;
+      if (state.currentJumboItem && state.currentJumboItem.id === item.id) {
+        card.classList.add('is-jumbo-active');
+      }
       card.style.setProperty('--card-theme', getCategoryColor(item));
 
       card.innerHTML = `
@@ -667,11 +812,19 @@
         </div>
       `;
 
-      // Click card body -> Open Detail Modal
+      // Click card body -> Select in Jumbo 3D Stage & Speak Bilingual!
       card.addEventListener('click', (e) => {
         if (e.target.closest('.card-btn-mini') || e.target.closest('.card-speaker-badge')) return;
         SoundFX.playPop();
-        openWordModal(item);
+        updateJumboStage(item, true);
+
+        // Smooth scroll up to jumbo stage if needed
+        if (DOM.jumboStage) {
+          const rect = DOM.jumboStage.getBoundingClientRect();
+          if (rect.top < -30 || rect.bottom < 120) {
+            DOM.jumboStage.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          }
+        }
       });
 
       // Quick Bilingual Audio: English first, then Bengali
@@ -681,6 +834,7 @@
         btn.addEventListener('click', (e) => {
           e.stopPropagation();
           SoundFX.playPop();
+          updateJumboStage(item, false);
           SpeechEngine.speakBilingual(item.word, item.meaning);
           setMascotMessage(`${item.word} — ${item.meaning}!`);
         });
@@ -691,6 +845,7 @@
       btnSlow.addEventListener('click', (e) => {
         e.stopPropagation();
         SoundFX.playPop();
+        updateJumboStage(item, false);
         SpeechEngine.speakBilingual(item.word, item.meaning, true);
         setMascotMessage(`${item.word} — ${item.meaning} (ধীরে ধীরে)!`);
       });
@@ -1080,6 +1235,75 @@
       renderCards();
     });
 
+    // Jumbo 3D Stage Interactive Events
+    if (DOM.btnJumboTapTalk) {
+      DOM.btnJumboTapTalk.addEventListener('click', () => {
+        if (state.currentJumboItem) {
+          SoundFX.playPop();
+          SpeechEngine.speakBilingual(state.currentJumboItem.word, state.currentJumboItem.meaning);
+        }
+      });
+    }
+
+    if (DOM.jumboImg) {
+      DOM.jumboImg.addEventListener('click', () => {
+        if (state.currentJumboItem) {
+          SoundFX.playSparkle();
+          SpeechEngine.speakBilingual(state.currentJumboItem.word, state.currentJumboItem.meaning);
+        }
+      });
+    }
+
+    if (DOM.btnJumboBilingual) {
+      DOM.btnJumboBilingual.addEventListener('click', () => {
+        if (state.currentJumboItem) {
+          SoundFX.playPop();
+          SpeechEngine.speakBilingual(state.currentJumboItem.word, state.currentJumboItem.meaning);
+          setMascotMessage(`${state.currentJumboItem.word} — ${state.currentJumboItem.meaning}!`);
+        }
+      });
+    }
+
+    if (DOM.btnJumboSlow) {
+      DOM.btnJumboSlow.addEventListener('click', () => {
+        if (state.currentJumboItem) {
+          SoundFX.playPop();
+          SpeechEngine.speakBilingual(state.currentJumboItem.word, state.currentJumboItem.meaning, true);
+          setMascotMessage(`${state.currentJumboItem.word} — ${state.currentJumboItem.meaning} (ধীরে ধীরে)!`);
+        }
+      });
+    }
+
+    if (DOM.btnJumboSpell) {
+      DOM.btnJumboSpell.addEventListener('click', () => {
+        if (state.currentJumboItem) {
+          SoundFX.playPop();
+          SpeechEngine.spellOut(state.currentJumboItem.word, state.currentJumboItem.meaning);
+        }
+      });
+    }
+
+    if (DOM.btnJumboSentence) {
+      DOM.btnJumboSentence.addEventListener('click', () => {
+        if (state.currentJumboItem) {
+          SoundFX.playPop();
+          SpeechEngine.speak(state.currentJumboItem.sentence || state.currentJumboItem.word);
+        }
+      });
+    }
+
+    if (DOM.btnJumboMic) {
+      DOM.btnJumboMic.addEventListener('click', handleJumboMic);
+    }
+
+    if (DOM.btnJumboPrev) {
+      DOM.btnJumboPrev.addEventListener('click', handleJumboPrev);
+    }
+
+    if (DOM.btnJumboNext) {
+      DOM.btnJumboNext.addEventListener('click', handleJumboNext);
+    }
+
     // Modal Events
     DOM.btnModalClose.addEventListener('click', closeModal);
     DOM.wordModal.addEventListener('click', (e) => {
@@ -1243,10 +1467,15 @@
 
     // Keyboard navigation (Escape closes modal, Left/Right navigates)
     window.addEventListener('keydown', (e) => {
+      if (document.activeElement === DOM.wordSearch) return;
+
       if (DOM.wordModal.classList.contains('active')) {
         if (e.key === 'Escape') closeModal();
         if (e.key === 'ArrowLeft') DOM.btnModalPrev.click();
         if (e.key === 'ArrowRight') DOM.btnModalNext.click();
+      } else if (state.currentMode === 'cards') {
+        if (e.key === 'ArrowLeft') handleJumboPrev();
+        if (e.key === 'ArrowRight') handleJumboNext();
       }
     });
   }

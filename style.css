@@ -565,10 +565,455 @@ body {
   box-shadow: 0 4px 12px rgba(255, 71, 87, 0.15);
 }
 
+/* ==========================================================================
+   JUMBO 3D HERO LEARNING STAGE
+   ========================================================================== */
+.jumbo-3d-stage {
+  background: linear-gradient(135deg, #FFFDF7 0%, #FFFFFF 45%, #FFF5F7 100%);
+  border-radius: 36px;
+  border: 4px solid #FFEAA7;
+  border-bottom: 10px solid #FDCB6E;
+  box-shadow: 0 20px 45px rgba(253, 203, 110, 0.22), 0 8px 18px rgba(0, 0, 0, 0.05);
+  padding: 26px 28px 22px;
+  margin-bottom: 28px;
+  position: relative;
+  overflow: hidden;
+  animation: fadeInView 0.35s ease;
+}
+
+.jumbo-3d-stage::before {
+  content: '';
+  position: absolute;
+  top: -80px;
+  right: -80px;
+  width: 220px;
+  height: 220px;
+  background: radial-gradient(circle, rgba(255, 118, 117, 0.12) 0%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.jumbo-stage-badge {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+#jumbo-cat-badge {
+  background: #FFF3CD;
+  color: #B7791F;
+  border: 2px solid #FEEBC8;
+  padding: 6px 18px;
+  border-radius: 999px;
+  font-size: 15px;
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 3px 8px rgba(254, 203, 110, 0.25);
+}
+
+.jumbo-counter {
+  background: #EDF2F7;
+  color: #4A5568;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 5px 14px;
+  border-radius: 999px;
+}
+
+.jumbo-stage-main {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 32px;
+  align-items: center;
+}
+
+@media (max-width: 900px) {
+  .jumbo-stage-main {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+}
+
+/* 3D Visual Pedestal with Glow */
+.jumbo-3d-pedestal-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.jumbo-3d-glow {
+  position: absolute;
+  width: 260px;
+  height: 260px;
+  background: radial-gradient(circle, rgba(255, 199, 95, 0.35) 0%, rgba(255, 107, 129, 0.15) 50%, transparent 72%);
+  border-radius: 50%;
+  z-index: 1;
+  animation: glowPulse 4s infinite alternate ease-in-out;
+  pointer-events: none;
+}
+
+@keyframes glowPulse {
+  0% { transform: scale(0.92); opacity: 0.7; }
+  100% { transform: scale(1.1); opacity: 1; }
+}
+
+.jumbo-3d-pedestal {
+  width: 290px;
+  height: 270px;
+  background: radial-gradient(circle at 50% 65%, #FFF8E1 0%, #FFFFFF 65%);
+  border: 4px solid #FFE082;
+  border-bottom: 12px solid #FFD54F;
+  border-radius: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 16px 36px rgba(255, 179, 0, 0.18), inset 0 2px 8px rgba(255, 255, 255, 0.8);
+  position: relative;
+  z-index: 2;
+  cursor: pointer;
+  transition: transform 0.3s var(--bounce-cubic), border-color 0.3s ease;
+}
+
+.jumbo-3d-pedestal:hover {
+  transform: translateY(-4px) scale(1.02);
+  border-color: #FFCA28;
+}
+
+.jumbo-3d-img {
+  max-width: 230px;
+  max-height: 230px;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 20px 24px rgba(0, 0, 0, 0.22)) drop-shadow(0 6px 10px rgba(0, 0, 0, 0.1));
+  animation: jumboFloat3D 3.2s ease-in-out infinite alternate;
+  transition: transform 0.35s var(--bounce-cubic);
+}
+
+.jumbo-3d-pedestal:hover .jumbo-3d-img {
+  transform: scale(1.12) rotate(3deg);
+  filter: drop-shadow(0 26px 30px rgba(0, 0, 0, 0.28)) drop-shadow(0 8px 12px rgba(0, 0, 0, 0.14));
+}
+
+@keyframes jumboFloat3D {
+  0% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-10px) scale(1.03) rotate(-1deg); }
+  100% { transform: translateY(2px) scale(0.99) rotate(1deg); }
+}
+
+.jumbo-tap-talk-hint {
+  margin-top: 10px;
+  background: white;
+  border: 2px solid #FFD54F;
+  color: #D97706;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 5px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.06);
+  z-index: 2;
+}
+
+.jumbo-tap-talk-hint:hover {
+  background: #FFFBEB;
+  transform: scale(1.06);
+}
+
+/* Jumbo Stage Text Content */
+.jumbo-stage-content {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.jumbo-word-header {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.jumbo-word-title {
+  font-size: 42px;
+  font-weight: 900;
+  color: #1E293B;
+  letter-spacing: -1px;
+  line-height: 1.1;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.jumbo-spelling-pill {
+  background: #EEF2FF;
+  color: #4F46E5;
+  border: 2px solid #C7D2FE;
+  border-radius: 999px;
+  padding: 4px 14px;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 2px;
+}
+
+.jumbo-pron-meaning-row {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.jumbo-badge-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 18px;
+  border-radius: 20px;
+  min-width: 150px;
+}
+
+.jumbo-badge-item.pron {
+  background: #ECFDF5;
+  border: 2px solid #A7F3D0;
+  color: #065F46;
+}
+
+.jumbo-badge-item.meaning {
+  background: #FFF7ED;
+  border: 2px solid #FED7AA;
+  color: #9A3412;
+}
+
+.jumbo-badge-lbl {
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  opacity: 0.8;
+}
+
+.jumbo-badge-item strong {
+  font-size: 22px;
+  font-weight: 900;
+  line-height: 1.2;
+}
+
+.jumbo-sentence-box {
+  background: #F8FAFC;
+  border-radius: 18px;
+  border: 2px dashed #CBD5E1;
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.jumbo-sentence-box .sentence-icon {
+  font-size: 18px;
+}
+
+.jumbo-sentence-box p {
+  flex: 1;
+  font-size: 15px;
+  font-style: italic;
+  font-weight: 600;
+  color: #334155;
+}
+
+/* Voice & Interactive Jumbo Buttons */
+.jumbo-voice-buttons {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+}
+
+.jumbo-btn {
+  border-radius: 20px;
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  border: 3px solid transparent;
+  transition: all 0.2s var(--bounce-cubic);
+  text-align: left;
+  user-select: none;
+}
+
+.jumbo-btn .btn-emoji {
+  font-size: 26px;
+  flex-shrink: 0;
+}
+
+.jumbo-btn .btn-labels {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.jumbo-btn .btn-labels strong {
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.jumbo-btn .btn-labels small {
+  font-size: 11px;
+  opacity: 0.85;
+}
+
+.jumbo-btn.primary {
+  background: linear-gradient(135deg, #FF4757, #FF6B81);
+  color: white;
+  border-color: #EE2D3E;
+  border-bottom: 5px solid #D63031;
+  box-shadow: 0 8px 18px rgba(255, 71, 87, 0.35);
+}
+
+.jumbo-btn.primary:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 24px rgba(255, 71, 87, 0.45);
+}
+
+.jumbo-btn.slow {
+  background: linear-gradient(135deg, #2ED573, #7BED9F);
+  color: #0F5132;
+  border-color: #26AF5F;
+  border-bottom: 5px solid #1E824C;
+  box-shadow: 0 8px 18px rgba(46, 213, 115, 0.3);
+}
+
+.jumbo-btn.slow:hover {
+  transform: translateY(-3px);
+}
+
+.jumbo-btn.spell {
+  background: linear-gradient(135deg, #A55EEA, #D6A2E8);
+  color: white;
+  border-color: #8854D0;
+  border-bottom: 5px solid #6C5CE7;
+  box-shadow: 0 8px 18px rgba(165, 94, 234, 0.3);
+}
+
+.jumbo-btn.spell:hover {
+  transform: translateY(-3px);
+}
+
+.jumbo-btn.mic {
+  background: linear-gradient(135deg, #FFA502, #FFC048);
+  color: #794500;
+  border-color: #E67E22;
+  border-bottom: 5px solid #D35400;
+  box-shadow: 0 8px 18px rgba(255, 165, 2, 0.35);
+}
+
+.jumbo-btn.mic:hover {
+  transform: translateY(-3px);
+}
+
+.jumbo-btn:active {
+  transform: translateY(2px);
+  border-bottom-width: 2px;
+}
+
+.jumbo-mic-feedback {
+  background: #FFFBEB;
+  border: 2px solid #FDE68A;
+  border-radius: 14px;
+  padding: 10px 14px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #92400E;
+  animation: fadeInModal 0.2s ease;
+}
+
+/* Bottom Nav Controls in Jumbo Stage */
+.jumbo-nav-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 2px dashed #E2E8F0;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.jumbo-nav-btn {
+  padding: 9px 20px;
+  border-radius: 999px;
+  border: 2px solid #CBD5E1;
+  background: white;
+  color: #334155;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.2s var(--bounce-cubic);
+}
+
+.jumbo-nav-btn:hover {
+  background: #F1F5F9;
+  transform: translateY(-2px);
+  border-color: #94A3B8;
+}
+
+.jumbo-nav-btn.primary {
+  background: #4F46E5;
+  color: white;
+  border-color: #4338CA;
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25);
+}
+
+.jumbo-nav-btn.primary:hover {
+  background: #4338CA;
+  transform: translateY(-2px);
+}
+
+.jumbo-quick-shortcuts {
+  font-size: 13px;
+  color: #64748B;
+  font-weight: 600;
+}
+
+/* Section Divider */
+.grid-section-divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 10px 0 22px;
+  position: relative;
+}
+
+.grid-section-divider::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: #E2E8F0;
+  z-index: 1;
+}
+
+.grid-section-divider span {
+  position: relative;
+  z-index: 2;
+  background: var(--bg-body, #F7F9FC);
+  padding: 4px 20px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 800;
+  color: #64748B;
+  border: 2px solid #E2E8F0;
+}
+
 .cards-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 22px;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 24px;
 }
 
 /* Individual Word Card - 3D Chunky Toy Style */
@@ -601,6 +1046,29 @@ body {
   opacity: 0.8;
 }
 
+.word-card.is-jumbo-active {
+  border-color: #FF4757;
+  border-bottom: 12px solid #FF4757;
+  box-shadow: 0 18px 36px rgba(255, 71, 87, 0.22);
+  background: #FFFDF9;
+  transform: translateY(-4px);
+}
+
+.word-card.is-jumbo-active::after {
+  content: '🌟 একটিভ';
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  background: #FF4757;
+  color: white;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 3px 10px;
+  border-radius: 99px;
+  box-shadow: 0 3px 8px rgba(255, 71, 87, 0.3);
+  z-index: 2;
+}
+
 .word-card:hover {
   transform: translateY(-10px) scale(1.02);
   border-color: var(--card-theme, #FF4757);
@@ -618,15 +1086,15 @@ body {
   position: absolute;
   top: 14px;
   right: 14px;
-  width: 42px;
-  height: 42px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   background: #FFF5F7;
   border: 2px solid #FF8EA5;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 18px;
+  font-size: 19px;
   cursor: pointer;
   transition: all 0.2s var(--bounce-cubic);
   box-shadow: 0 4px 10px rgba(255, 71, 87, 0.2);
@@ -642,30 +1110,30 @@ body {
 /* Big 3D Card Image Container */
 .card-img-wrap {
   width: 100%;
-  height: 180px;
+  height: 205px;
   display: flex;
   align-items: center;
   justify-content: center;
   margin: 6px 0 14px;
-  background: radial-gradient(circle at 50% 70%, rgba(255, 234, 167, 0.35) 0%, transparent 65%);
-  border-radius: 20px;
+  background: radial-gradient(circle at 50% 70%, rgba(255, 234, 167, 0.4) 0%, rgba(255, 245, 230, 0.2) 50%, transparent 70%);
+  border-radius: 24px;
   perspective: 700px;
 }
 
 .card-img-wrap img {
-  max-width: 165px;
-  max-height: 165px;
+  max-width: 185px;
+  max-height: 185px;
   width: auto;
   height: auto;
   object-fit: contain;
-  filter: drop-shadow(0 14px 16px rgba(0, 0, 0, 0.14)) drop-shadow(0 4px 6px rgba(0, 0, 0, 0.08));
+  filter: drop-shadow(0 16px 18px rgba(0, 0, 0, 0.16)) drop-shadow(0 4px 8px rgba(0, 0, 0, 0.08));
   transition: transform 0.35s var(--bounce-cubic), filter 0.35s ease;
   transform: translateZ(15px);
 }
 
 .word-card:hover .card-img-wrap img {
   transform: scale(1.18) translateY(-8px) rotate(-3deg);
-  filter: drop-shadow(0 22px 24px rgba(0, 0, 0, 0.22)) drop-shadow(0 6px 10px rgba(0, 0, 0, 0.12));
+  filter: drop-shadow(0 24px 26px rgba(0, 0, 0, 0.24)) drop-shadow(0 8px 12px rgba(0, 0, 0, 0.14));
 }
 
 /* Card Text */
