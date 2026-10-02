@@ -279,6 +279,30 @@
       gain.connect(this.ctx.destination);
       osc.start();
       osc.stop(this.ctx.currentTime + 0.25);
+    },
+
+    playCheer() {
+      if (!state.soundEnabled) return;
+      const cheers = ['sound_super.mp3', 'sound_very_good.mp3', 'sound_nice.mp3', 'sound_win_puzzle.mp3'];
+      const c = cheers[Math.floor(Math.random() * cheers.length)];
+      try {
+        const audio = new Audio(`sounds/${c}`);
+        audio.volume = 0.85;
+        audio.play().catch(() => this.playFanfare());
+      } catch (e) {
+        this.playFanfare();
+      }
+    },
+
+    playCorrect() {
+      if (!state.soundEnabled) return;
+      try {
+        const audio = new Audio('sounds/sound_correct_answer.mp3');
+        audio.volume = 0.85;
+        audio.play().catch(() => this.playSparkle());
+      } catch (e) {
+        this.playSparkle();
+      }
     }
   };
 
@@ -752,10 +776,11 @@
       (spoken, isMatch) => {
         if (!DOM.jumboMicFeedback) return;
         if (isMatch) {
-          SoundFX.playFanfare();
+          SoundFX.playCorrect();
+          SoundFX.playCheer();
           Confetti.fire(60);
           updateStars(2);
-          DOM.jumboMicFeedback.innerHTML = `<span style="color:#10B981;">🎉 দারুণ হয়েছে! তুমি বলেছ: <strong>"${spoken}"</strong>! ⭐ +২ স্টার</span>`;
+          DOM.jumboMicFeedback.innerHTML = `<span style="color:#10B981;">🎉 দারুণ হয়েছে! You said: <strong>"${spoken}"</strong>! ⭐ +২ স্টার</span>`;
           setMascotMessage(`সাবাশ! অসাধারণ উচ্চারণ করেছ: "${target}"! ⭐`, false);
         } else {
           SoundFX.playBoing();
@@ -947,7 +972,8 @@
       state.quiz.streak++;
       updateStars(2);
       Confetti.fire(50);
-      SoundFX.playFanfare();
+      SoundFX.playCorrect();
+      SoundFX.playCheer();
 
       DOM.quizFeedback.innerHTML = `<span style="color:#00B894;">🎉 দারুণ! একদম সঠিক! (${correct.word} - ${correct.meaning})</span>`;
       setMascotMessage(`সাবাশ! ${correct.word} মানে ${correct.meaning}! ⭐ +২ স্টার!`);
