@@ -79,16 +79,20 @@
 
     <!-- App Navigation Modes (Tabs) -->
     <nav class="mode-tabs">
-      <button class="mode-tab active" data-mode="cards">
-        <span class="tab-emoji">🃏</span>
-        <span class="tab-text">টকিং কার্ডস</span>
+      <button class="mode-tab active" data-mode="home">
+        <span class="tab-emoji">🏠</span>
+        <span class="tab-text">হোম মেনু</span>
+      </button>
+      <button class="mode-tab" data-mode="cards">
+        <span class="tab-emoji">📖</span>
+        <span class="tab-text">পড়ার বই</span>
       </button>
       <button class="mode-tab" data-mode="quiz">
         <span class="tab-emoji">🎯</span>
-        <span class="tab-text">শুনে খোঁজো গেম</span>
+        <span class="tab-text">শুনে খোঁজো</span>
       </button>
       <button class="mode-tab" data-mode="speak">
-        <span class="tab-emoji">🎤</span>
+        <span class="tab-emoji">🎙️</span>
         <span class="tab-text">তুমিও বলো</span>
       </button>
       <button class="mode-tab" data-mode="match">
@@ -101,8 +105,8 @@
       </button>
     </nav>
 
-    <!-- Category Selector Pill Carousel -->
-    <section class="category-section" id="category-section">
+    <!-- Category Selector Pill Carousel (Visible in Book/Cards mode) -->
+    <section class="category-section" id="category-section" style="display: none;">
       <div class="category-scroll" id="category-pills">
         <!-- Rendered dynamically -->
       </div>
@@ -111,9 +115,31 @@
     <!-- Main Content Area (Switches based on mode) -->
     <main class="main-content">
 
+      <!-- ================= MODE 0: HOME PLAYGROUND MENU ================= -->
+      <section id="view-home" class="view-panel active">
+        <div class="home-hero-banner">
+          <div class="home-hero-content">
+            <h2 class="home-hero-title">🎈 কী শিখতে চাও সোনা?</h2>
+            <p class="home-hero-subtitle">নিচের যেকোনো রঙিন কার্ডে ট্যাপ করো, চলো নতুন কিছু শিখি!</p>
+          </div>
+          <div class="home-fun-badge">
+            <span>✨ ১০০+ ছবি ও কথা</span>
+          </div>
+        </div>
+
+        <!-- 3D Category Portal Cards Grid for Kids -->
+        <div class="kid-category-grid" id="kid-category-grid">
+          <!-- Dynamically populated by app.js with giant 3D images -->
+        </div>
+      </section>
+
       <!-- ================= MODE 1: TALKING FLASHCARDS ================= -->
-      <section id="view-cards" class="view-panel active">
+      <section id="view-cards" class="view-panel">
         <div class="cards-header">
+          <button id="btn-back-home" class="btn-back-home" title="হোম মেনুতে ফিরে যান">
+            <span class="back-home-icon">🏠</span>
+            <span class="back-home-txt">হোম</span>
+          </button>
           <div class="category-info">
             <span id="current-cat-icon">🍎</span>
             <div>
@@ -121,8 +147,9 @@
               <span id="current-cat-count" class="count-badge">১৪টি শব্দ</span>
             </div>
           </div>
-          <div class="search-box">
-            <input type="text" id="word-search" placeholder="🔍 শব্দ খুঁজুন (Apple, আম...)" autocomplete="off">
+          <div class="cards-view-toggle">
+            <button id="btn-toggle-jumbo" class="view-toggle-btn active" title="বড় ৩ডি ছবি">📖 বড় বই</button>
+            <button id="btn-toggle-grid" class="view-toggle-btn" title="সব ছবি একসাথে">🗂️ সব ছবি</button>
           </div>
         </div>
 
@@ -220,13 +247,16 @@
           </div>
         </div>
 
-        <div class="grid-section-divider">
-          <span>📚 সব ৩ডি কার্ড একসাথে (Browse All Cards)</span>
-        </div>
+        <!-- Word Cards Grid Section (Toggleable) -->
+        <div id="grid-view-container" class="grid-view-container" style="display: none;">
+          <div class="grid-section-divider">
+            <span>📚 সব ৩ডি কার্ড একসাথে (Browse All Cards)</span>
+          </div>
 
-        <!-- Word Cards Grid -->
-        <div class="cards-grid" id="cards-grid">
-          <!-- Dynamically populated -->
+          <!-- Word Cards Grid -->
+          <div class="cards-grid" id="cards-grid">
+            <!-- Dynamically populated -->
+          </div>
         </div>
       </section>
 
@@ -234,6 +264,9 @@
       <section id="view-quiz" class="view-panel">
         <div class="quiz-container">
           <div class="quiz-top-bar">
+            <button class="btn-subview-home" title="হোম মেনু">
+              <span>🏠 হোম</span>
+            </button>
             <div class="streak-badge">
               <span>🔥 স্ট্রিক: </span>
               <strong id="quiz-streak">0</strong>
@@ -265,6 +298,13 @@
       <!-- ================= MODE 3: SPEAK TO MASCOT ================= -->
       <section id="view-speak" class="view-panel">
         <div class="speak-container">
+          <div class="subview-top-bar">
+            <button class="btn-subview-home" title="হোম মেনু">
+              <span>🏠 হোম</span>
+            </button>
+            <span class="subview-title-pill">🎙️ তুমিও বলো খেলা</span>
+          </div>
+
           <div class="speak-card" id="speak-target-card">
             <div class="speak-img-wrap">
               <img id="speak-target-img" src="images/apple.png" alt="Target Word">
@@ -307,6 +347,9 @@
       <section id="view-match" class="view-panel">
         <div class="match-container">
           <div class="match-top-bar">
+            <button class="btn-subview-home" title="হোম মেনু">
+              <span>🏠 হোম</span>
+            </button>
             <div class="moves-badge">
               <span>চাল: </span><strong id="match-moves">0</strong>
             </div>
@@ -325,6 +368,13 @@
       <!-- ================= MODE 5: AUTOPLAY STORYBOOK ================= -->
       <section id="view-autoplay" class="view-panel">
         <div class="autoplay-container">
+          <div class="subview-top-bar" style="margin-bottom: 12px;">
+            <button class="btn-subview-home" title="হোম মেনু">
+              <span>🏠 হোম</span>
+            </button>
+            <span class="subview-title-pill">▶️ অটো প্লে কার্টুন বই</span>
+          </div>
+
           <div class="autoplay-stage" id="autoplay-stage">
             <div class="autoplay-card" id="autoplay-card">
               <div class="autoplay-image-frame">

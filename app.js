@@ -24,7 +24,7 @@
     searchQuery: '',
     stars: parseInt(localStorage.getItem('kids_stars') || '0', 10),
     soundEnabled: true,
-    currentMode: 'cards',
+    currentMode: 'home',
     
     // Quiz State
     quiz: {
@@ -80,9 +80,18 @@
     mascotCharacter: document.getElementById('mascot-character'),
     mascotMessage: document.getElementById('mascot-message'),
 
+    // Home Playground & Navigation
+    viewHome: document.getElementById('view-home'),
+    kidCategoryGrid: document.getElementById('kid-category-grid'),
+    btnBackHome: document.getElementById('btn-back-home'),
+    btnToggleJumbo: document.getElementById('btn-toggle-jumbo'),
+    btnToggleGrid: document.getElementById('btn-toggle-grid'),
+    gridViewContainer: document.getElementById('grid-view-container'),
+
     // Tabs & Categories
     modeTabs: document.querySelectorAll('.mode-tab'),
     viewPanels: document.querySelectorAll('.view-panel'),
+    categorySection: document.getElementById('category-section'),
     categoryPills: document.getElementById('category-pills'),
 
     // View: Cards
@@ -639,6 +648,134 @@
       });
       DOM.categoryPills.appendChild(pill);
     });
+  }
+
+  // ==================== KID CATEGORY PLAYGROUND PORTALS ====================
+  function renderKidCategoryGrid() {
+    if (!DOM.kidCategoryGrid) return;
+    DOM.kidCategoryGrid.innerHTML = '';
+
+    const categoryPreviews = [
+      { id: 'fruits', title: 'Fruits', titleBn: 'ফলমূল', icon: '🍎', image: 'images/apple.png', count: 14, theme: 'cat-theme-fruits' },
+      { id: 'animals', title: 'Animals', titleBn: 'পশুপাখি', icon: '🦁', image: 'images/lion.png', count: 7, theme: 'cat-theme-animals' },
+      { id: 'birds', title: 'Birds', titleBn: 'পাখি', icon: '🦜', image: 'images/swan.png', count: 5, theme: 'cat-theme-birds' },
+      { id: 'insects', title: 'Insects', titleBn: 'পোকামাকড়', icon: '🦋', image: 'images/butterfly.png', count: 5, theme: 'cat-theme-insects' },
+      { id: 'flowers', title: 'Flowers', titleBn: 'সুন্দর ফুল', icon: '🌸', image: 'images/rose.png', count: 4, theme: 'cat-theme-flowers' },
+      { id: 'vehicles', title: 'Vehicles', titleBn: 'যানবাহন', icon: '🚗', image: 'images/car.png', count: 6, theme: 'cat-theme-vehicles' },
+      { id: 'household', title: 'My Home', titleBn: 'আমার ঘর', icon: '🛋️', image: 'images/bed.png', count: 9, theme: 'cat-theme-household' },
+      { id: 'body_parts', title: 'Body Parts', titleBn: 'শরীরের অঙ্গ', icon: '🧍', image: 'images/face.png', count: 44, theme: 'cat-theme-body' },
+      { id: 'nature', title: 'Nature', titleBn: 'সুন্দর প্রকৃতি', icon: '🌊', image: 'images/mountain.png', count: 8, theme: 'cat-theme-nature' },
+      { id: 'games', title: 'Fun Games', titleBn: 'মজার খেলা', icon: '🎮', image: 'images/grapes.png', count: '৩টি খেলা', theme: 'cat-theme-games', isGames: true }
+    ];
+
+    categoryPreviews.forEach(cat => {
+      const card = document.createElement('div');
+      card.className = `kid-portal-card ${cat.theme}`;
+      card.dataset.catId = cat.id;
+
+      card.innerHTML = `
+        <div class="kid-portal-shine"></div>
+        <div class="kid-portal-badge">
+          <span class="portal-badge-icon">${cat.icon}</span>
+          <span class="portal-badge-count">${typeof cat.count === 'number' ? `${toBengaliDigits(cat.count)}টি ছবি` : cat.count}</span>
+        </div>
+        <div class="kid-portal-img-wrap">
+          <img src="${cat.image}" alt="${cat.title}" loading="lazy" class="kid-portal-img">
+        </div>
+        <div class="kid-portal-title-box">
+          <h3 class="kid-portal-bangla">${cat.titleBn}</h3>
+          <span class="kid-portal-english">${cat.title}</span>
+        </div>
+        <div class="kid-portal-tap-hint">
+          <span>ট্যাপ করো 👆</span>
+        </div>
+      `;
+
+      card.addEventListener('click', () => {
+        SoundFX.playPop();
+        SoundFX.playCheer();
+        Confetti.fire(45);
+
+        if (cat.isGames) {
+          switchMode('quiz');
+        } else {
+          selectCategory(cat.id);
+          switchMode('cards');
+          setCardsSubView('jumbo');
+          const items = getCurrentItems();
+          if (items.length > 0) {
+            updateJumboStage(items[0], true);
+          }
+        }
+      });
+
+      DOM.kidCategoryGrid.appendChild(card);
+    });
+  }
+
+  // ==================== UNIFIED MODE SWITCHER ====================
+  function switchMode(mode) {
+    state.currentMode = mode;
+
+    // Update Tab UI
+    DOM.modeTabs.forEach(t => {
+      if (t.dataset.mode === mode) {
+        t.classList.add('active');
+      } else {
+        t.classList.remove('active');
+      }
+    });
+
+    // Update Panels UI
+    DOM.viewPanels.forEach(p => p.classList.remove('active'));
+    const activePanel = document.getElementById(`view-${mode}`);
+    if (activePanel) activePanel.classList.add('active');
+
+    // Category pills bar visibility: hide in home mode to keep screen clean, show in cards mode
+    if (DOM.categorySection) {
+      DOM.categorySection.style.display = (mode === 'cards') ? 'block' : 'none';
+    }
+
+    // Scroll top smoothly
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    // Mode specific triggers
+    if (mode === 'home') {
+      setMascotMessage('হ্যালো ছোট্ট সোনা! চলো ছবি দেখে শিখি ও খেলি! 🎈');
+    } else if (mode === 'cards') {
+      renderCards();
+      setCardsSubView('jumbo');
+    } else if (mode === 'quiz') {
+      startQuizQuestion();
+    } else if (mode === 'speak') {
+      loadSpeakingTarget();
+    } else if (mode === 'match') {
+      setupMemoryMatch();
+    } else if (mode === 'autoplay') {
+      startAutoplay();
+    }
+
+    // Pause autoplay if leaving autoplay mode
+    if (mode !== 'autoplay' && state.autoplay.isPlaying) {
+      pauseAutoplay();
+    }
+  }
+
+  // Toggle between Jumbo 3D Book and All Cards Grid
+  function setCardsSubView(subView) {
+    if (!DOM.btnToggleJumbo || !DOM.btnToggleGrid) return;
+    if (subView === 'jumbo') {
+      DOM.btnToggleJumbo.classList.add('active');
+      DOM.btnToggleGrid.classList.remove('active');
+      if (DOM.jumboStage) DOM.jumboStage.style.display = 'block';
+      if (DOM.gridViewContainer) DOM.gridViewContainer.style.display = 'none';
+    } else {
+      DOM.btnToggleGrid.classList.add('active');
+      DOM.btnToggleJumbo.classList.remove('active');
+      if (DOM.jumboStage) DOM.jumboStage.style.display = 'none';
+      if (DOM.gridViewContainer) DOM.gridViewContainer.style.display = 'block';
+      renderCards();
+    }
   }
 
   function selectCategory(catId) {
@@ -1206,35 +1343,40 @@
     DOM.modeTabs.forEach(tab => {
       tab.addEventListener('click', () => {
         SoundFX.playPop();
-        DOM.modeTabs.forEach(t => t.classList.remove('active'));
-        tab.classList.add('active');
-
         const mode = tab.dataset.mode;
-        state.currentMode = mode;
-
-        DOM.viewPanels.forEach(p => p.classList.remove('active'));
-        const activePanel = document.getElementById(`view-${mode}`);
-        if (activePanel) activePanel.classList.add('active');
-
-        // Mode specific setup
-        if (mode === 'cards') {
-          renderCards();
-        } else if (mode === 'quiz') {
-          startQuizQuestion();
-        } else if (mode === 'speak') {
-          loadSpeakingTarget();
-        } else if (mode === 'match') {
-          setupMemoryMatch();
-        } else if (mode === 'autoplay') {
-          startAutoplay();
-        }
-
-        // Pause autoplay if leaving autoplay mode
-        if (mode !== 'autoplay' && state.autoplay.isPlaying) {
-          pauseAutoplay();
-        }
+        switchMode(mode);
       });
     });
+
+    // Back to Home Button
+    if (DOM.btnBackHome) {
+      DOM.btnBackHome.addEventListener('click', () => {
+        SoundFX.playPop();
+        switchMode('home');
+      });
+    }
+
+    // Subview Home Buttons (for Quiz, Speak, Match, Autoplay)
+    document.querySelectorAll('.btn-subview-home').forEach(btn => {
+      btn.addEventListener('click', () => {
+        SoundFX.playPop();
+        switchMode('home');
+      });
+    });
+
+    // View Toggles: Jumbo 3D Book vs All Cards Grid
+    if (DOM.btnToggleJumbo) {
+      DOM.btnToggleJumbo.addEventListener('click', () => {
+        SoundFX.playPop();
+        setCardsSubView('jumbo');
+      });
+    }
+    if (DOM.btnToggleGrid) {
+      DOM.btnToggleGrid.addEventListener('click', () => {
+        SoundFX.playPop();
+        setCardsSubView('grid');
+      });
+    }
 
     // Sound Toggle
     DOM.btnSoundToggle.addEventListener('click', () => {
@@ -1516,8 +1658,10 @@
     DOM.starCount.textContent = state.stars;
 
     renderCategoryPills();
+    renderKidCategoryGrid();
     selectCategory('fruits');
     setupEventListeners();
+    switchMode('home');
 
     console.log('Kids Interactive Talking Learning App initialized successfully!');
   }
