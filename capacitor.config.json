@@ -1,0 +1,9 @@
+{
+  "appId": "com.jim.kidstalkingbook",
+  "appName": "Kids Talking Book",
+  "webDir": "www",
+  "bundledWebRuntime": false,
+  "android": {
+    "allowMixedContent": true
+  }
+}

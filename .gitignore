@@ -4,4 +4,8 @@ __pycache__/
 Thumbs.db
 .vercel
 
-.vercel
+# Node modules
+node_modules/
+
+# Capacitor web export
+www/
