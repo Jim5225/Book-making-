@@ -3,23 +3,30 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>ছোটদের কথা বলা বই | Kids Interactive Learning App</title>
+  <title>Kids All in One - ছোটদের অল ইন ওয়ান | 100% Free Educational App</title>
   
   <!-- PWA & Mobile Standalone App Support -->
   <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#FF7A00">
+  <meta name="theme-color" content="#8DC63F">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="TalkingBook">
+  <meta name="apple-mobile-web-app-title" content="KidsAllInOne">
   <link rel="apple-touch-icon" href="images/icon-192.png">
 
-  <!-- Google Fonts for playful kid typography -->
+  <!-- Playful Typography -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Hind+Siliguri:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <!-- Cartoon Clouds Background Layer -->
+  <div class="sky-clouds" aria-hidden="true">
+    <div class="cloud cloud-1"></div>
+    <div class="cloud cloud-2"></div>
+    <div class="cloud cloud-3"></div>
+  </div>
+
   <div class="app-container">
 
     <!-- PWA Install Floating Banner -->
@@ -28,7 +35,7 @@
         <span class="pwa-banner-icon">📱</span>
         <div>
           <strong>অ্যাপটি ফোনে ইনস্টল করুন!</strong>
-          <p>ফুল-স্ক্রিন মোডে সরাসরি অ্যাপের মতো ব্যবহার করুন</p>
+          <p>বিনা মূল্যে সরাসরি ফুল-স্ক্রিন মোডে পড়ার জন্য</p>
         </div>
       </div>
       <div class="pwa-banner-actions">
@@ -37,80 +44,59 @@
       </div>
     </div>
 
-    <!-- Top Navigation Header -->
-    <header class="app-header">
-      <div class="logo-area">
-        <div class="logo-icon">🎈</div>
-        <div class="logo-text">
-          <h1>টকিং কিডস বুক</h1>
-          <span class="subtitle">English & Bengali Learning Play</span>
-        </div>
+    <!-- Top Playful Control Bar (Kids All in One Style) -->
+    <header class="app-top-bar">
+      <!-- Left: Settings Gear Candy Button -->
+      <button id="btn-settings" class="candy-btn cyan" title="সেটিংস">
+        <span class="candy-icon">⚙️</span>
+      </button>
+
+      <!-- Center: App Title / Rainbow Logo -->
+      <div class="top-title-area" id="top-title-area">
+        <span class="rainbow-badge">🌈 100% Free</span>
+        <h1 class="app-main-title">Kids All in One</h1>
+        <span class="app-sub-title">ছোটদের কথা বলা বই • বাংলা ও ইংরেজি</span>
       </div>
 
-      <div class="header-stats">
-        <!-- Install App Trigger in Header -->
-        <button id="btn-install-app" class="icon-btn pwa-install-trigger" title="ফোনে ইনস্টল করুন" style="display: none;">
-          <span>📲</span>
-        </button>
-
-        <!-- Star / Score Bank -->
-        <div class="star-pill" title="তোমার অর্জিত স্টার">
-          <span class="star-icon">⭐</span>
+      <!-- Right: Star Bank & Sound Toggle Candy Button -->
+      <div class="top-right-controls">
+        <div class="candy-star-pill" id="btn-star-bank" title="তোমার অর্জিত স্টার">
+          <span class="star-anim">⭐</span>
           <span id="star-count" class="star-num">0</span>
         </div>
 
-        <!-- Sound Toggle -->
-        <button id="btn-sound-toggle" class="icon-btn" title="সাউন্ড অন/অফ">
-          <span id="sound-icon">🔊</span>
-        </button>
-
-        <!-- Settings Modal Trigger -->
-        <button id="btn-settings" class="icon-btn" title="সেটিংস">
-          <span>⚙️</span>
+        <button id="btn-sound-toggle" class="candy-btn green" title="সাউন্ড অন/অফ">
+          <span id="sound-icon" class="candy-icon">🔊</span>
         </button>
       </div>
     </header>
 
-    <!-- Interactive Mascot Area -->
-    <section class="mascot-banner">
-      <div class="mascot-wrapper">
-        <!-- Animated SVG Talking Mascot (Titu the friendly Bear/Panda) -->
-        <div class="mascot-avatar" id="mascot-character">
-          <div class="mascot-ears">
-            <span class="ear left"></span>
-            <span class="ear right"></span>
-          </div>
-          <div class="mascot-face">
-            <div class="mascot-eyes">
-              <span class="eye left"><span class="pupil"></span></span>
-              <span class="eye right"><span class="pupil"></span></span>
-            </div>
-            <div class="mascot-nose"></div>
-            <div class="mascot-mouth" id="mascot-mouth"></div>
-            <div class="mascot-cheeks">
-              <span class="blush left"></span>
-              <span class="blush right"></span>
-            </div>
-          </div>
-          <div class="mascot-hands">
-            <span class="hand left-hand">👋</span>
-            <span class="hand right-hand">✨</span>
-          </div>
+    <!-- Interactive Mascot Greeting Banner (Can be toggled or minimized) -->
+    <section class="mascot-mini-strip">
+      <div class="mascot-avatar" id="mascot-character">
+        <div class="mascot-ears">
+          <span class="ear left"></span>
+          <span class="ear right"></span>
         </div>
-
-        <!-- Mascot Speech Bubble -->
-        <div class="speech-bubble" id="mascot-bubble">
-          <p id="mascot-message">হ্যালো বন্ধু! আমি টিটু 🐻। যেকোনো কার্ডে ট্যাপ করো, আমি সুন্দর করে পড়ে শোনাবো!</p>
-          <div class="speech-bubble-tail"></div>
+        <div class="mascot-face">
+          <div class="mascot-eyes">
+            <span class="eye left"><span class="pupil"></span></span>
+            <span class="eye right"><span class="pupil"></span></span>
+          </div>
+          <div class="mascot-nose"></div>
+          <div class="mascot-mouth" id="mascot-mouth"></div>
         </div>
+      </div>
+      <div class="mascot-strip-bubble">
+        <p id="mascot-message">হ্যালো সোনা! চলো একসঙ্গে শিখি — আগে ইংরেজি, তারপর বাংলা অর্থ! 🎈</p>
       </div>
     </section>
 
-    <!-- App Navigation Modes (Tabs) -->
+    <!-- Navigation Mode Tabs -->
     <nav class="mode-tabs">
       <button class="mode-tab active" data-mode="home">
         <span class="tab-emoji">🏠</span>
-        <span class="tab-text">হোম মেনু</span>
+        <span class="tab-text">বিষয় নির্বাচন</span>
       </button>
       <button class="mode-tab" data-mode="cards">
         <span class="tab-emoji">📖</span>
@@ -118,7 +104,11 @@
       </button>
       <button class="mode-tab" data-mode="quiz">
         <span class="tab-emoji">🎯</span>
-        <span class="tab-text">শুনে খোঁজো</span>
+        <span class="tab-text">মজার কুইজ</span>
+      </button>
+      <button class="mode-tab" data-mode="paint">
+        <span class="tab-emoji">🎨</span>
+        <span class="tab-text">ছবি আঁকা</span>
       </button>
       <button class="mode-tab" data-mode="speak">
         <span class="tab-emoji">🎙️</span>
@@ -128,215 +118,253 @@
         <span class="tab-emoji">🧩</span>
         <span class="tab-text">জোড়া মেলাও</span>
       </button>
-      <button class="mode-tab" data-mode="autoplay">
-        <span class="tab-emoji">▶️</span>
-        <span class="tab-text">অটো প্লে</span>
-      </button>
     </nav>
 
-    <!-- Category Selector Pill Carousel (Visible in Book/Cards mode) -->
-    <section class="category-section" id="category-section" style="display: none;">
-      <div class="category-scroll" id="category-pills">
-        <!-- Rendered dynamically -->
-      </div>
-    </section>
-
-    <!-- Main Content Area (Switches based on mode) -->
+    <!-- ================= MAIN CONTENT PANELS ================= -->
     <main class="main-content">
 
-      <!-- ================= MODE 0: HOME PLAYGROUND MENU ================= -->
+      <!-- ================= 1. HOME: SELECT CATEGORY (3D WOODEN BILLBOARD CAROUSEL) ================= -->
       <section id="view-home" class="view-panel active">
-        <div class="home-hero-banner">
-          <div class="home-hero-content">
-            <h2 class="home-hero-title">🎈 কী শিখতে চাও সোনা?</h2>
-            <p class="home-hero-subtitle">নিচের যেকোনো রঙিন কার্ডে ট্যাপ করো, চলো নতুন কিছু শিখি!</p>
-          </div>
-          <div class="home-fun-badge">
-            <span>✨ ১০০+ ছবি ও কথা</span>
+        <!-- Header Text (Kids All in One Screenshot 2) -->
+        <div class="category-select-header">
+          <h2 class="category-select-title">Select Category</h2>
+          <div class="category-index-badge" id="category-index-badge">1 / 11</div>
+        </div>
+
+        <!-- 3D Wooden Billboard Frame -->
+        <div class="wooden-billboard">
+          <div class="wooden-billboard-canvas">
+            <!-- Left Arrow: Glossy Orange Jelly Button -->
+            <button id="btn-coverflow-prev" class="candy-arrow-btn prev" title="পূর্ববর্তী বিষয়" aria-label="Previous Category">
+              <span>❮❮</span>
+            </button>
+
+            <!-- 3D Coverflow Stage -->
+            <div class="coverflow-stage" id="coverflow-stage">
+              <!-- Dynamically rendered 3D cards -->
+            </div>
+
+            <!-- Right Arrow: Glossy Orange Jelly Button -->
+            <button id="btn-coverflow-next" class="candy-arrow-btn next" title="পরবর্তী বিষয়" aria-label="Next Category">
+              <span>❯❯</span>
+            </button>
           </div>
         </div>
 
-        <!-- 3D Category Portal Cards Grid for Kids -->
-        <div class="kid-category-grid" id="kid-category-grid">
-          <!-- Dynamically populated by app.js with giant 3D images -->
+        <!-- Tap to Learn hint & Grid Toggle -->
+        <div class="billboard-action-bar">
+          <button id="btn-open-active-category" class="pill-btn primary pulse-scale">
+            <span>👉 এখনই পড়া শুরু করো 🚀</span>
+          </button>
+          <button id="btn-toggle-all-cats" class="pill-btn secondary">
+            <span id="txt-toggle-cats">🗂️ সব বিষয় একসাথে দেখো</span>
+          </button>
+        </div>
+
+        <!-- Full Category Grid (Toggleable) -->
+        <div class="kid-category-grid" id="kid-category-grid" style="display: none;">
+          <!-- Dynamically populated cards -->
         </div>
       </section>
 
-      <!-- ================= MODE 1: TALKING FLASHCARDS ================= -->
+
+      <!-- ================= 2. CARDS: SINGLE BIG ITEM SHOWCASE (Screenshot 0) ================= -->
       <section id="view-cards" class="view-panel">
-        <div class="cards-header">
-          <button id="btn-back-home" class="btn-back-home" title="হোম মেনুতে ফিরে যান">
-            <span class="back-home-icon">🏠</span>
-            <span class="back-home-txt">হোম</span>
-          </button>
-          <div class="category-info">
-            <span id="current-cat-icon">🍎</span>
-            <div>
-              <h2 id="current-cat-title">ফলমূল (Fruits)</h2>
-              <span id="current-cat-count" class="count-badge">১৪টি শব্দ</span>
-            </div>
-          </div>
-          <div class="cards-view-toggle">
-            <button id="btn-toggle-jumbo" class="view-toggle-btn active" title="বড় ৩ডি ছবি">📖 বড় বই</button>
-            <button id="btn-toggle-grid" class="view-toggle-btn" title="সব ছবি একসাথে">🗂️ সব ছবি</button>
-          </div>
-        </div>
-
-        <!-- ================= 3D JUMBO LEARNING STAGE ================= -->
-        <div class="jumbo-3d-stage" id="jumbo-3d-stage">
-          <div class="jumbo-stage-badge">
-            <span id="jumbo-cat-badge">🍎 ফলমূল (Fruits)</span>
-            <span class="jumbo-counter" id="jumbo-counter">১ / ১৪</span>
-          </div>
-
-          <div class="jumbo-showcase-container">
-            <!-- Left Side Arrow for Little Fingers -->
-            <button id="btn-jumbo-prev" class="jumbo-side-arrow prev" title="আগের ছবি">
+        <div class="item-showcase-container">
+          <!-- Top Bar inside Item Stage -->
+          <div class="item-stage-header">
+            <button id="btn-back-home" class="candy-btn green" title="বিষয় তালিকায় ফিরে যান">
               <span>⬅️</span>
             </button>
+            
+            <div class="item-cat-tag-pill" id="item-cat-tag-pill">
+              <span id="jumbo-cat-badge">🍎 ফলমূল (Fruits)</span>
+              <span class="jumbo-counter" id="jumbo-counter">১ / ১৪</span>
+            </div>
 
-            <!-- Center Showcase -->
-            <div class="jumbo-showcase-center">
-              <!-- Giant 3D Visual with Glowing Pedestal -->
-              <div class="jumbo-3d-pedestal-wrap" id="jumbo-pedestal-wrap">
-                <div class="jumbo-3d-glow"></div>
-                <div class="jumbo-3d-pedestal" id="jumbo-pedestal" title="ছবিতে চাপ দিলে কথা বলবে!">
-                  <img id="jumbo-img" src="images/apple.png" alt="Apple 3D" class="jumbo-3d-img">
-                </div>
-                <button id="btn-jumbo-tap-talk" class="jumbo-tap-talk-hint" title="কথা শুনুন">
-                  <span>🔊 ছবিতে ট্যাপ করো কথা শুনতে ✨</span>
-                </button>
+            <!-- Cheerful Cartoon Star Button -->
+            <button id="btn-jumbo-star-cheer" class="candy-star-btn" title="স্টার আনন্দ!">
+              <span class="star-icon-smiling">⭐</span>
+            </button>
+          </div>
+
+          <!-- Central Pure White Card with Large 3D Visual & Side Arrows -->
+          <div class="item-stage-main">
+            <!-- Left Side Orange Arrow Button -->
+            <button id="btn-jumbo-prev" class="candy-arrow-btn prev floating" title="আগের ছবি" aria-label="Previous Item">
+              <span>❮❮</span>
+            </button>
+
+            <!-- Big White Card (Kids All in One Screenshot 0 Style) -->
+            <div class="item-white-card" id="item-white-card">
+              <!-- Ultra-Large 3D Photographic Image -->
+              <div class="item-img-container" id="item-img-container" title="ছবিতে চাপ দিলে কথা বলবে!">
+                <img id="jumbo-img" src="images/apple.png" alt="Apple 3D" class="item-giant-img">
+                <span class="tap-hint-pill">👆 ছবিতে ট্যাপ করে কথা শোনো</span>
               </div>
 
-              <!-- Giant Word Title & Meaning Details -->
-              <div class="jumbo-word-showcase">
-                <h1 id="jumbo-word" class="jumbo-word-title">Apple</h1>
-                <div class="jumbo-spelling-pill" id="jumbo-spelling-pill">A • P • P • L • E</div>
-                
-                <div class="jumbo-bilingual-badges">
-                  <div class="jumbo-badge-item meaning">
-                    <span class="jumbo-badge-lbl">বাংলা অর্থ</span>
-                    <strong id="jumbo-meaning">আপেল</strong>
-                  </div>
-                  <div class="jumbo-badge-item pron">
-                    <span class="jumbo-badge-lbl">উচ্চারণ</span>
-                    <strong id="jumbo-pron">অ্যাপল</strong>
-                  </div>
-                </div>
-
-                <div class="jumbo-sentence-box">
-                  <span class="sentence-icon">💡</span>
-                  <p id="jumbo-sentence">An apple a day keeps the doctor away!</p>
-                  <button id="btn-jumbo-sentence" class="icon-circle-btn sm" title="বাক্য শোনো">🔊</button>
-                </div>
-
-                <!-- Main Voice & Kid Action Buttons -->
-                <div class="jumbo-voice-buttons">
-                  <button id="btn-jumbo-bilingual" class="jumbo-btn primary">
-                    <span class="btn-emoji">🔊</span>
-                    <span class="btn-labels">
-                      <strong>শোনো (English ➡️ বাংলা)</strong>
-                      <small>আগে ইংরেজি, তারপর বাংলা অর্থ</small>
-                    </span>
-                  </button>
-                  <button id="btn-jumbo-slow" class="jumbo-btn slow">
-                    <span class="btn-emoji">🐢</span>
-                    <span class="btn-labels">
-                      <strong>ধীরে সুরে বলো</strong>
-                      <small>আস্তে আস্তে সুর করে বলো</small>
-                    </span>
-                  </button>
-                  <button id="btn-jumbo-spell" class="jumbo-btn spell">
-                    <span class="btn-emoji">🔤</span>
-                    <span class="btn-labels">
-                      <strong>বানান করে</strong>
-                      <small>A-B-C অক্ষর ভাঙা</small>
-                    </span>
-                  </button>
-                  <button id="btn-jumbo-autoplay" class="jumbo-btn autoplay">
-                    <span class="btn-emoji">▶️</span>
-                    <span class="btn-labels">
-                      <strong>অটো প্লে</strong>
-                      <small>একের পর এক শুনো</small>
-                    </span>
-                  </button>
-                  <button id="btn-jumbo-mic" class="jumbo-btn mic">
-                    <span class="btn-emoji">🎙️</span>
-                    <span class="btn-labels">
-                      <strong>তুমিও বলো</strong>
-                      <small>মুখে বলে স্টার জেতো ⭐</small>
-                    </span>
+              <!-- Word & Meaning Box (Bilingual) -->
+              <div class="item-title-box">
+                <div class="item-word-row">
+                  <h1 id="jumbo-word" class="item-word-text">Apple</h1>
+                  <button id="btn-jumbo-replay" class="candy-replay-btn" title="কথা আবার শোনো">
+                    <span>🔊</span>
                   </button>
                 </div>
 
-                <!-- Live mic response bubble inside Jumbo stage -->
-                <div id="jumbo-mic-feedback" class="jumbo-mic-feedback" style="display: none;"></div>
+                <!-- Bengali Meaning & Pronunciation -->
+                <div class="item-bangla-meaning-box">
+                  <span class="item-meaning-badge" id="jumbo-meaning">আপেল</span>
+                  <span class="item-pron-badge" id="jumbo-pron">(উচ্চারণ: অ্যাপল)</span>
+                </div>
+
+                <!-- Letter-by-letter spelling -->
+                <div class="item-spelling-strip" id="jumbo-spelling-pill">A • P • P • L • E</div>
               </div>
             </div>
 
-            <!-- Right Side Arrow for Little Fingers -->
-            <button id="btn-jumbo-next" class="jumbo-side-arrow next" title="পরের ছবি">
-              <span>➡️</span>
+            <!-- Right Side Orange Arrow Button -->
+            <button id="btn-jumbo-next" class="candy-arrow-btn next floating" title="পরের ছবি" aria-label="Next Item">
+              <span>❯❯</span>
             </button>
           </div>
-        </div>
 
-        <!-- Word Cards Grid Section (Toggleable) -->
-        <div id="grid-view-container" class="grid-view-container" style="display: none;">
-          <div class="grid-section-divider">
-            <span>📚 সব ৩ডি কার্ড একসাথে (Browse All Cards)</span>
-          </div>
+          <!-- Interactive Learning Extras (Sentence, Spell, Mic) -->
+          <div class="item-stage-footer">
+            <div class="item-sentence-bubble" id="item-sentence-bubble">
+              <span class="sentence-icon">💡</span>
+              <p id="jumbo-sentence">An apple a day keeps the doctor away!</p>
+              <button id="btn-jumbo-sentence" class="icon-circle-btn sm" title="বাক্য শোনো">🔊</button>
+            </div>
 
-          <!-- Word Cards Grid -->
-          <div class="cards-grid" id="cards-grid">
-            <!-- Dynamically populated -->
+            <div class="item-quick-actions">
+              <button id="btn-jumbo-bilingual" class="pill-btn primary">
+                <span>🔊 শোনো (English ➡️ বাংলা)</span>
+              </button>
+              <button id="btn-jumbo-spell" class="pill-btn spell">
+                <span>🔤 বানান করে</span>
+              </button>
+              <button id="btn-jumbo-mic" class="pill-btn mic">
+                <span>🎙️ মুখে বলো</span>
+              </button>
+            </div>
+            
+            <div id="jumbo-mic-feedback" class="jumbo-mic-feedback" style="display: none;"></div>
           </div>
         </div>
       </section>
 
-      <!-- ================= MODE 2: LISTEN & FIND QUIZ ================= -->
+
+      <!-- ================= 3. QUIZ: 4-CARD PHOTO FINDER (Screenshot 3) ================= -->
       <section id="view-quiz" class="view-panel">
-        <div class="quiz-container">
-          <div class="quiz-top-bar">
-            <button class="btn-subview-home" title="হোম মেনু">
-              <span>🏠 হোম</span>
+        <div class="quiz-showcase-stage">
+          <!-- Quiz Top Bar -->
+          <div class="quiz-stage-header">
+            <button class="candy-btn green btn-subview-home" title="হোম মেনু">
+              <span>⬅️</span>
             </button>
-            <div class="streak-badge">
-              <span>🔥 স্ট্রিক: </span>
-              <strong id="quiz-streak">0</strong>
+            
+            <!-- Score Counter (Checkmark & Cross) -->
+            <div class="quiz-score-board">
+              <span class="quiz-counter-text" id="quiz-counter">১ / ১০</span>
+              <div class="score-pill correct" title="সঠিক উত্তর">
+                <span class="score-icon">✔</span>
+                <strong id="quiz-score-correct">0</strong>
+              </div>
+              <div class="score-pill wrong" title="ভুল উত্তর">
+                <span class="score-icon">✖</span>
+                <strong id="quiz-score-wrong">0</strong>
+              </div>
             </div>
-            <div class="score-badge">
-              <span>স্কোর: </span>
-              <strong id="quiz-score">0 / 0</strong>
-            </div>
-            <button id="btn-quiz-skip" class="pill-btn secondary">অন্য প্রশ্ন ⏭️</button>
+
+            <button id="btn-quiz-listen" class="candy-btn cyan" title="প্রশ্ন আবার শোনো">
+              <span>🔊</span>
+            </button>
           </div>
 
-          <div class="quiz-prompt-card">
-            <button id="btn-quiz-listen" class="quiz-speaker-btn pulse-glow" title="প্রশ্ন আবার শোনো">
-              <span class="speaker-icon">🔊</span>
-              <span class="speaker-text">আবার শোনো!</span>
-            </button>
-            <h3 id="quiz-question-text" class="quiz-question">নিচের কোনটি "Apple"?</h3>
-            <p id="quiz-hint" class="quiz-hint">ছবিতে ট্যাপ করে সঠিক উত্তর বেছে নাও!</p>
+          <!-- Prompt Question Bubble -->
+          <div class="quiz-prompt-bubble">
+            <h2 id="quiz-question-text">কোনটি "Apple"? (আপেল)</h2>
+            <p id="quiz-hint" class="quiz-hint-text">সঠিক ছবিতে ট্যাপ করো!</p>
           </div>
 
-          <div class="quiz-options-grid" id="quiz-options">
-            <!-- 4 Options rendered dynamically -->
+          <!-- 4 Polaroid Photo Cards Grid (Screenshot 3 with Taped Corners) -->
+          <div class="quiz-polaroid-grid" id="quiz-options">
+            <!-- 4 Cards dynamically rendered -->
           </div>
 
           <div id="quiz-feedback" class="quiz-feedback"></div>
         </div>
       </section>
 
-      <!-- ================= MODE 3: SPEAK TO MASCOT ================= -->
+
+      <!-- ================= 4. PAINT: KIDS DRAWING & COLORING STUDIO ================= -->
+      <section id="view-paint" class="view-panel">
+        <div class="paint-stage-container">
+          <!-- Paint Top Bar -->
+          <div class="paint-stage-header">
+            <button class="candy-btn green btn-subview-home" title="হোম মেনু">
+              <span>⬅️</span>
+            </button>
+            <h2 class="paint-stage-title">🎨 ছবি আঁকো ও রঙ করো</h2>
+            <div class="paint-header-actions">
+              <button id="btn-paint-undo" class="pill-btn sm" title="আগের ধাপে যাও">↩️ আনডু</button>
+              <button id="btn-paint-clear" class="pill-btn sm danger" title="ক্যানভাস মুছো">🗑️ মুছো</button>
+              <button id="btn-paint-save" class="pill-btn sm primary" title="ছবি সেভ করো">💾 সেভ করো</button>
+            </div>
+          </div>
+
+          <!-- White Drawing Canvas Wrapper -->
+          <div class="paint-canvas-frame">
+            <canvas id="paint-canvas" width="820" height="480"></canvas>
+          </div>
+
+          <!-- Paint Tools Toolbar -->
+          <div class="paint-tools-panel">
+            <!-- Colors Palette -->
+            <div class="paint-colors-bar" id="paint-colors-bar">
+              <!-- Dynamically rendered 12 rainbow colors -->
+            </div>
+
+            <!-- Brush Size & Eraser Tools -->
+            <div class="paint-tools-row">
+              <div class="brush-size-group">
+                <span class="tool-label">ব্রাশ:</span>
+                <button class="brush-btn sm" data-size="4" title="চিকন"></button>
+                <button class="brush-btn md active" data-size="10" title="মাঝারি"></button>
+                <button class="brush-btn lg" data-size="20" title="মোটা"></button>
+                <button class="brush-btn xl" data-size="34" title="অনেক মোটা"></button>
+              </div>
+
+              <button id="btn-paint-eraser" class="tool-toggle-btn" title="ইরেজার (মুছে ফেলা)">
+                <span>🧹 ইরেজার</span>
+              </button>
+            </div>
+
+            <!-- Fun Stamp Stickers -->
+            <div class="paint-stamps-bar" id="paint-stamps-bar">
+              <span class="tool-label">স্ট্যাম্প:</span>
+              <button class="stamp-chip" data-stamp="⭐" title="স্টার">⭐</button>
+              <button class="stamp-chip" data-stamp="💖" title="ভালোবাসা">💖</button>
+              <button class="stamp-chip" data-stamp="🍎" title="আপেল">🍎</button>
+              <button class="stamp-chip" data-stamp="🦁" title="সিংহ">🦁</button>
+              <button class="stamp-chip" data-stamp="🚗" title="গাড়ি">🚗</button>
+              <button class="stamp-chip" data-stamp="🌸" title="ফুল">🌸</button>
+              <button class="stamp-chip" data-stamp="🎈" title="বেলুন">🎈</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+
+      <!-- ================= 5. SPEAK: SPEAKING CHALLENGE ================= -->
       <section id="view-speak" class="view-panel">
         <div class="speak-container">
           <div class="subview-top-bar">
-            <button class="btn-subview-home" title="হোম মেনু">
-              <span>🏠 হোম</span>
+            <button class="candy-btn green btn-subview-home" title="হোম মেনু">
+              <span>⬅️</span>
             </button>
-            <span class="subview-title-pill">🎙️ তুমিও বলো খেলা</span>
+            <span class="subview-title-pill">🎙️ তুমিও মুখে বলো খেলা</span>
           </div>
 
           <div class="speak-card" id="speak-target-card">
@@ -371,18 +399,17 @@
             মাইক বাটনে চাপ দিয়ে ইংরেজিতে বলো!
           </div>
 
-          <div class="speech-result-box" id="speech-result-box">
-            <!-- Shows recognized speech with match evaluation -->
-          </div>
+          <div class="speech-result-box" id="speech-result-box"></div>
         </div>
       </section>
 
-      <!-- ================= MODE 4: MEMORY MATCH ================= -->
+
+      <!-- ================= 6. MATCH: MEMORY MATCH GAME ================= -->
       <section id="view-match" class="view-panel">
         <div class="match-container">
           <div class="match-top-bar">
-            <button class="btn-subview-home" title="হোম মেনু">
-              <span>🏠 হোম</span>
+            <button class="candy-btn green btn-subview-home" title="হোম মেনু">
+              <span>⬅️</span>
             </button>
             <div class="moves-badge">
               <span>চাল: </span><strong id="match-moves">0</strong>
@@ -399,122 +426,7 @@
         </div>
       </section>
 
-      <!-- ================= MODE 5: AUTOPLAY STORYBOOK ================= -->
-      <section id="view-autoplay" class="view-panel">
-        <div class="autoplay-container">
-          <div class="subview-top-bar" style="margin-bottom: 12px;">
-            <button class="btn-subview-home" title="হোম মেনু">
-              <span>🏠 হোম</span>
-            </button>
-            <span class="subview-title-pill">▶️ অটো প্লে কার্টুন বই</span>
-          </div>
-
-          <div class="autoplay-stage" id="autoplay-stage">
-            <div class="autoplay-card" id="autoplay-card">
-              <div class="autoplay-image-frame">
-                <img id="autoplay-img" src="images/apple.png" alt="Autoplay Word">
-              </div>
-              <div class="autoplay-info">
-                <span class="autoplay-tag" id="autoplay-cat">Fruits | ফলমূল</span>
-                <h1 id="autoplay-word">Apple</h1>
-                <h3 id="autoplay-pron">উচ্চারণ: অ্যাপল</h3>
-                <h2 id="autoplay-meaning">অর্থ: আপেল</h2>
-                <div class="autoplay-sentence-bubble">
-                  <span class="sentence-icon">💡</span>
-                  <p id="autoplay-sentence">An apple a day keeps the doctor away!</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="autoplay-controls">
-            <button id="btn-autoplay-prev" class="ctrl-btn" title="পূর্ববর্তী">⏮️</button>
-            <button id="btn-autoplay-playpause" class="ctrl-btn main-play" title="প্লে/পজ">⏸️</button>
-            <button id="btn-autoplay-next" class="ctrl-btn" title="পরবর্তী">⏭️</button>
-          </div>
-          <div class="autoplay-progress-bar">
-            <div class="autoplay-progress-fill" id="autoplay-progress"></div>
-          </div>
-        </div>
-      </section>
-
     </main>
-
-    <!-- Word Detail Interactive Modal (When a card is tapped) -->
-    <div class="modal-overlay" id="word-modal">
-      <div class="modal-card">
-        <button class="modal-close-btn" id="btn-modal-close" title="বন্ধ করো">✖</button>
-
-        <div class="modal-header">
-          <span class="modal-cat-tag" id="modal-cat">Fruits</span>
-        </div>
-
-        <div class="modal-body">
-          <div class="modal-image-container">
-            <img id="modal-img" src="images/apple.png" alt="Word Illustration">
-            <button id="btn-modal-repeat-mic" class="corner-mic-btn" title="তুমিও বলো">🎙️</button>
-          </div>
-
-          <div class="modal-text-content">
-            <h1 id="modal-word">Apple</h1>
-            <div class="pron-badge">
-              <span class="badge-label">বাংলা উচ্চারণ:</span>
-              <strong id="modal-pron">অ্যাপল</strong>
-            </div>
-            <div class="meaning-badge">
-              <span class="badge-label">বাংলা অর্থ:</span>
-              <strong id="modal-meaning">আপেল</strong>
-            </div>
-
-            <!-- Example sentence -->
-            <div class="sentence-card">
-              <span class="sentence-lbl">মজার বাক্য:</span>
-              <p id="modal-sentence">"An apple a day keeps the doctor away!"</p>
-              <button id="btn-modal-say-sentence" class="icon-circle-btn" title="বাক্য শোনো">🔊</button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Voice Action Buttons -->
-        <div class="modal-actions">
-          <button id="btn-modal-say-bilingual" class="voice-btn primary">
-            <span class="btn-icon">🔊</span>
-            <span class="btn-title">English + বাংলা</span>
-          </button>
-
-          <button id="btn-modal-say-slow" class="voice-btn slow">
-            <span class="btn-icon">🐢</span>
-            <span class="btn-title">ধীরে ধীরে</span>
-          </button>
-
-          <button id="btn-modal-spelling" class="voice-btn spell">
-            <span class="btn-icon">🔤</span>
-            <span class="btn-title">বানান করে</span>
-          </button>
-
-          <button id="btn-modal-say-en" class="voice-btn secondary">
-            <span class="btn-icon">🗣️</span>
-            <span class="btn-title">শুধু English</span>
-          </button>
-        </div>
-
-        <!-- Pronunciation Practice Bar in Modal -->
-        <div class="modal-mic-section">
-          <button id="btn-modal-test-mic" class="pill-btn mic-action">
-            <span>🎙️ মুখে বলো: </span>
-            <strong id="modal-mic-target">"Apple"</strong>
-          </button>
-          <div id="modal-mic-feedback" class="modal-mic-feedback"></div>
-        </div>
-
-        <!-- Modal Prev / Next Navigation -->
-        <div class="modal-nav">
-          <button id="btn-modal-prev" class="nav-arrow">⬅️ আগেরটি</button>
-          <span id="modal-counter">১ / ১৪</span>
-          <button id="btn-modal-next" class="nav-arrow">পরেরটি ➡️</button>
-        </div>
-      </div>
-    </div>
 
     <!-- Settings Modal -->
     <div class="modal-overlay" id="settings-modal">
@@ -526,7 +438,7 @@
           <label>🗣️ ভয়েসের গতি (Voice Speed):</label>
           <div class="range-wrap">
             <span>🐢</span>
-            <input type="range" id="setting-rate" min="0.6" max="1.3" step="0.1" value="0.9">
+            <input type="range" id="setting-rate" min="0.6" max="1.2" step="0.05" value="0.75">
             <span>🐇</span>
           </div>
         </div>
@@ -535,7 +447,7 @@
           <label>🎵 ভয়েসের সুর (Pitch):</label>
           <div class="range-wrap">
             <span>🦁</span>
-            <input type="range" id="setting-pitch" min="0.8" max="1.6" step="0.1" value="1.2">
+            <input type="range" id="setting-pitch" min="0.9" max="1.6" step="0.05" value="1.35">
             <span>🐥</span>
           </div>
         </div>

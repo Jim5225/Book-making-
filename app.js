@@ -1,38 +1,50 @@
 /**
  * ============================================================================
- * KIDS INTERACTIVE TALKING LEARNING APP - MAIN CONTROLLER (app.js)
+ * KIDS ALL IN ONE - MAIN CONTROLLER (app.js)
+ * Modeled closely after "Kids All in One - Educational"
  * Features:
- *  - Interactive Talking Mascot with lip-sync animations
- *  - Web Speech API (Text-to-Speech: English & Bengali, Turtle mode, Spelling mode)
- *  - Speech Recognition (Kids Voice Assessment & Encouragement)
- *  - Web Audio API Sound Effects Synthesizer (Instant, no lag)
- *  - 5 Engaging Modes: Cards, Listen & Find Quiz, Speaking Challenge, Memory Match, Autoplay
- *  - Confetti Celebrations & Star Rewards System
+ *  - 3D Wooden Billboard Coverflow Category Selector
+ *  - Single Big Item Showcase (Ultra-large 3D photos, clean white cards)
+ *  - Automatic Melodic Bilingual Audio (English first, then Bengali meaning)
+ *  - 4-Card Polaroid Photo Quiz Game with sound & visual feedback
+ *  - Paint & Draw Studio with colors, brush sizes, and stamps
+ *  - Speaking Challenge & Memory Match Games
+ *  - Web Audio API Sound Effects Synthesizer (Zero network lag)
+ *  - Touch Swipe Gestures & Confetti Star Reward Engine
  * ============================================================================
  */
 
 (function () {
   'use strict';
 
-  // State Management
+  // Global State
   const state = {
     allCategories: window.VOCABULARY_DATA || [],
     currentCategory: 'fruits',
-    currentWordIndex: 0,
-    currentJumboItem: null,
     currentJumboIndex: 0,
-    searchQuery: '',
-    stars: parseInt(localStorage.getItem('kids_stars') || '0', 10),
+    currentJumboItem: null,
+    coverflowIndex: 0,
+    stars: parseInt(localStorage.getItem('kids_all_in_one_stars') || '0', 10),
     soundEnabled: true,
     currentMode: 'home',
-    
+
     // Quiz State
     quiz: {
       currentQuestion: null,
-      score: 0,
-      total: 0,
-      streak: 0,
+      correctCount: 0,
+      wrongCount: 0,
+      qIndex: 1,
+      totalQuestions: 10,
       answered: false
+    },
+
+    // Paint State
+    paint: {
+      currentColor: '#FF4757',
+      currentSize: 10,
+      isEraser: false,
+      activeStamp: null,
+      history: []
     },
 
     // Speaking Practice State
@@ -51,14 +63,7 @@
       lockBoard: false
     },
 
-    // Autoplay State
-    autoplay: {
-      isPlaying: false,
-      currentIndex: 0,
-      timer: null
-    },
-
-    // Voice Settings (Kid-like, slow, sing-song melodic learning)
+    // Voice Settings (Sweet, slow, child-like melodic tone)
     settings: {
       rate: 0.72,
       pitch: 1.38,
@@ -67,7 +72,22 @@
     }
   };
 
-  // DOM Elements
+  // Category Catalog for 3D Wooden Carousel
+  const CATEGORY_CATALOG = [
+    { id: 'fruits', title: 'Fruits', titleBn: 'ফলমূল', icon: '🍎', image: 'images/apple.png', count: 14 },
+    { id: 'animals', title: 'Animals', titleBn: 'পশুপাখি', icon: '🦁', image: 'images/lion.png', count: 7 },
+    { id: 'birds', title: 'Birds', titleBn: 'পাখি', icon: '🦜', image: 'images/swan.png', count: 5 },
+    { id: 'flowers', title: 'Flowers', titleBn: 'সুন্দর ফুল', icon: '🌸', image: 'images/rose.png', count: 4 },
+    { id: 'vehicles', title: 'Vehicles', titleBn: 'যানবাহন', icon: '🚗', image: 'images/car.png', count: 6 },
+    { id: 'household', title: 'My Home', titleBn: 'আমার ঘর', icon: '🛋️', image: 'images/bed.png', count: 9 },
+    { id: 'body_parts', title: 'Body Parts', titleBn: 'শরীরের অঙ্গ', icon: '🧍', image: 'images/face.png', count: 44 },
+    { id: 'nature', title: 'Nature', titleBn: 'সুন্দর প্রকৃতি', icon: '🌊', image: 'images/mountain.png', count: 8 },
+    { id: 'insects', title: 'Insects', titleBn: 'পোকামাকড়', icon: '🦋', image: 'images/butterfly.png', count: 5 },
+    { id: 'quiz', title: 'Quiz Game', titleBn: 'মজার কুইজ', icon: '🎯', image: 'images/grapes.png', count: 'খেলা', isMode: 'quiz' },
+    { id: 'paint', title: 'Paint & Draw', titleBn: 'ছবি আঁকা', icon: '🎨', image: 'images/peach.png', count: 'ড্রয়িং', isMode: 'paint' }
+  ];
+
+  // DOM Elements Cache
   const DOM = {
     starCount: document.getElementById('star-count'),
     btnSoundToggle: document.getElementById('btn-sound-toggle'),
@@ -75,87 +95,67 @@
     btnSettings: document.getElementById('btn-settings'),
     settingsModal: document.getElementById('settings-modal'),
     btnSettingsClose: document.getElementById('btn-settings-close'),
-    
+
     // Mascot
     mascotCharacter: document.getElementById('mascot-character'),
     mascotMessage: document.getElementById('mascot-message'),
 
-    // Home Playground & Navigation
-    viewHome: document.getElementById('view-home'),
-    kidCategoryGrid: document.getElementById('kid-category-grid'),
-    btnBackHome: document.getElementById('btn-back-home'),
-    btnToggleJumbo: document.getElementById('btn-toggle-jumbo'),
-    btnToggleGrid: document.getElementById('btn-toggle-grid'),
-    gridViewContainer: document.getElementById('grid-view-container'),
-
-    // Tabs & Categories
+    // Navigation Tabs & Panels
     modeTabs: document.querySelectorAll('.mode-tab'),
     viewPanels: document.querySelectorAll('.view-panel'),
-    categorySection: document.getElementById('category-section'),
-    categoryPills: document.getElementById('category-pills'),
 
-    // View: Cards
-    cardsGrid: document.getElementById('cards-grid'),
-    currentCatIcon: document.getElementById('current-cat-icon'),
-    currentCatTitle: document.getElementById('current-cat-title'),
-    currentCatCount: document.getElementById('current-cat-count'),
-    wordSearch: document.getElementById('word-search'),
+    // 1. Home / 3D Wooden Billboard
+    categoryIndexBadge: document.getElementById('category-index-badge'),
+    coverflowStage: document.getElementById('coverflow-stage'),
+    btnCoverflowPrev: document.getElementById('btn-coverflow-prev'),
+    btnCoverflowNext: document.getElementById('btn-coverflow-next'),
+    btnOpenActiveCategory: document.getElementById('btn-open-active-category'),
+    btnToggleAllCats: document.getElementById('btn-toggle-all-cats'),
+    txtToggleCats: document.getElementById('txt-toggle-cats'),
+    kidCategoryGrid: document.getElementById('kid-category-grid'),
 
-    // Jumbo 3D Stage
-    jumboStage: document.getElementById('jumbo-3d-stage'),
+    // 2. Big Item Showcase
+    btnBackHome: document.getElementById('btn-back-home'),
     jumboCatBadge: document.getElementById('jumbo-cat-badge'),
     jumboCounter: document.getElementById('jumbo-counter'),
-    jumboPedestal: document.getElementById('jumbo-pedestal'),
+    btnJumboStarCheer: document.getElementById('btn-jumbo-star-cheer'),
+    btnJumboPrev: document.getElementById('btn-jumbo-prev'),
+    btnJumboNext: document.getElementById('btn-jumbo-next'),
+    itemWhiteCard: document.getElementById('item-white-card'),
+    itemImgContainer: document.getElementById('item-img-container'),
     jumboImg: document.getElementById('jumbo-img'),
-    btnJumboTapTalk: document.getElementById('btn-jumbo-tap-talk'),
     jumboWord: document.getElementById('jumbo-word'),
-    jumboSpellingPill: document.getElementById('jumbo-spelling-pill'),
-    jumboPron: document.getElementById('jumbo-pron'),
+    btnJumboReplay: document.getElementById('btn-jumbo-replay'),
     jumboMeaning: document.getElementById('jumbo-meaning'),
+    jumboPron: document.getElementById('jumbo-pron'),
+    jumboSpellingPill: document.getElementById('jumbo-spelling-pill'),
     jumboSentence: document.getElementById('jumbo-sentence'),
     btnJumboSentence: document.getElementById('btn-jumbo-sentence'),
     btnJumboBilingual: document.getElementById('btn-jumbo-bilingual'),
-    btnJumboSlow: document.getElementById('btn-jumbo-slow'),
     btnJumboSpell: document.getElementById('btn-jumbo-spell'),
-    btnJumboAutoplay: document.getElementById('btn-jumbo-autoplay'),
     btnJumboMic: document.getElementById('btn-jumbo-mic'),
     jumboMicFeedback: document.getElementById('jumbo-mic-feedback'),
-    btnJumboPrev: document.getElementById('btn-jumbo-prev'),
-    btnJumboNext: document.getElementById('btn-jumbo-next'),
 
-    // Modal: Word Details
-    wordModal: document.getElementById('word-modal'),
-    btnModalClose: document.getElementById('btn-modal-close'),
-    modalCat: document.getElementById('modal-cat'),
-    modalImg: document.getElementById('modal-img'),
-    modalWord: document.getElementById('modal-word'),
-    modalPron: document.getElementById('modal-pron'),
-    modalMeaning: document.getElementById('modal-meaning'),
-    modalSentence: document.getElementById('modal-sentence'),
-    btnModalSayBilingual: document.getElementById('btn-modal-say-bilingual'),
-    btnModalSayEn: document.getElementById('btn-modal-say-en'),
-    btnModalSaySlow: document.getElementById('btn-modal-say-slow'),
-    btnModalSpelling: document.getElementById('btn-modal-spelling'),
-    btnModalSaySentence: document.getElementById('btn-modal-say-sentence'),
-    btnModalTestMic: document.getElementById('btn-modal-test-mic'),
-    modalMicTarget: document.getElementById('modal-mic-target'),
-    modalMicFeedback: document.getElementById('modal-mic-feedback'),
-    btnModalPrev: document.getElementById('btn-modal-prev'),
-    btnModalNext: document.getElementById('btn-modal-next'),
-    modalCounter: document.getElementById('modal-counter'),
-
-    // View: Quiz
+    // 3. Quiz (4-Card Polaroid)
+    quizCounter: document.getElementById('quiz-counter'),
+    quizScoreCorrect: document.getElementById('quiz-score-correct'),
+    quizScoreWrong: document.getElementById('quiz-score-wrong'),
+    btnQuizListen: document.getElementById('btn-quiz-listen'),
     quizQuestionText: document.getElementById('quiz-question-text'),
     quizHint: document.getElementById('quiz-hint'),
     quizOptions: document.getElementById('quiz-options'),
-    btnQuizListen: document.getElementById('btn-quiz-listen'),
-    btnQuizSkip: document.getElementById('btn-quiz-skip'),
-    quizScore: document.getElementById('quiz-score'),
-    quizStreak: document.getElementById('quiz-streak'),
     quizFeedback: document.getElementById('quiz-feedback'),
 
-    // View: Speaking
-    speakTargetCard: document.getElementById('speak-target-card'),
+    // 4. Paint Studio
+    paintCanvas: document.getElementById('paint-canvas'),
+    paintColorsBar: document.getElementById('paint-colors-bar'),
+    paintStampsBar: document.getElementById('paint-stamps-bar'),
+    btnPaintUndo: document.getElementById('btn-paint-undo'),
+    btnPaintClear: document.getElementById('btn-paint-clear'),
+    btnPaintSave: document.getElementById('btn-paint-save'),
+    btnPaintEraser: document.getElementById('btn-paint-eraser'),
+
+    // 5. Speaking Practice
     speakTargetImg: document.getElementById('speak-target-img'),
     speakTargetWord: document.getElementById('speak-target-word'),
     speakTargetPron: document.getElementById('speak-target-pron'),
@@ -166,23 +166,11 @@
     speechStatus: document.getElementById('speech-status'),
     speechResultBox: document.getElementById('speech-result-box'),
 
-    // View: Memory Match
+    // 6. Memory Match
     matchGrid: document.getElementById('match-grid'),
     matchMoves: document.getElementById('match-moves'),
     matchPairs: document.getElementById('match-pairs'),
     btnMatchRestart: document.getElementById('btn-match-restart'),
-
-    // View: Autoplay
-    autoplayImg: document.getElementById('autoplay-img'),
-    autoplayCat: document.getElementById('autoplay-cat'),
-    autoplayWord: document.getElementById('autoplay-word'),
-    autoplayPron: document.getElementById('autoplay-pron'),
-    autoplayMeaning: document.getElementById('autoplay-meaning'),
-    autoplaySentence: document.getElementById('autoplay-sentence'),
-    btnAutoplayPlaypause: document.getElementById('btn-autoplay-playpause'),
-    btnAutoplayPrev: document.getElementById('btn-autoplay-prev'),
-    btnAutoplayNext: document.getElementById('btn-autoplay-next'),
-    autoplayProgress: document.getElementById('autoplay-progress'),
 
     // Settings
     settingRate: document.getElementById('setting-rate'),
@@ -192,7 +180,12 @@
     btnTestVoice: document.getElementById('btn-test-voice'),
 
     // Confetti
-    confettiCanvas: document.getElementById('confetti-canvas')
+    confettiCanvas: document.getElementById('confetti-canvas'),
+
+    // PWA
+    pwaBanner: document.getElementById('pwa-install-banner'),
+    btnPwaInstall: document.getElementById('btn-pwa-install'),
+    btnPwaDismiss: document.getElementById('btn-pwa-dismiss')
   };
 
   /* ==========================================================================
@@ -205,9 +198,7 @@
     init() {
       try {
         const AudioCtx = window.AudioContext || window.webkitAudioContext;
-        if (AudioCtx) {
-          this.ctx = new AudioCtx();
-        }
+        if (AudioCtx) this.ctx = new AudioCtx();
       } catch (e) {
         console.warn('Web Audio API not supported', e);
       }
@@ -243,36 +234,31 @@
         const osc = this.ctx.createOscillator();
         const gain = this.ctx.createGain();
         osc.type = 'triangle';
-        osc.frequency.setValueAtTime(freq, this.ctx.currentTime + idx * 0.08);
-        gain.gain.setValueAtTime(0.2, this.ctx.currentTime + idx * 0.08);
-        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + idx * 0.08 + 0.25);
+        osc.frequency.setValueAtTime(freq, this.ctx.currentTime + idx * 0.07);
+        gain.gain.setValueAtTime(0.22, this.ctx.currentTime + idx * 0.07);
+        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + idx * 0.07 + 0.22);
         osc.connect(gain);
         gain.connect(this.ctx.destination);
-        osc.start(this.ctx.currentTime + idx * 0.08);
-        osc.stop(this.ctx.currentTime + idx * 0.08 + 0.25);
+        osc.start(this.ctx.currentTime + idx * 0.07);
+        osc.stop(this.ctx.currentTime + idx * 0.07 + 0.22);
       });
     },
 
     playFanfare() {
       if (!state.soundEnabled || !this.ctx) return;
       this.resume();
-      const chords = [
-        { f: 523.25, t: 0.0 }, // C5
-        { f: 659.25, t: 0.12 }, // E5
-        { f: 783.99, t: 0.24 }, // G5
-        { f: 1046.50, t: 0.36 } // C6
-      ];
-      chords.forEach(n => {
+      const chord = [523.25, 659.25, 783.99, 1046.50];
+      chord.forEach((freq, idx) => {
         const osc = this.ctx.createOscillator();
         const gain = this.ctx.createGain();
         osc.type = 'sine';
-        osc.frequency.setValueAtTime(n.f, this.ctx.currentTime + n.t);
-        gain.gain.setValueAtTime(0.3, this.ctx.currentTime + n.t);
-        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + n.t + 0.4);
+        osc.frequency.setValueAtTime(freq, this.ctx.currentTime + idx * 0.1);
+        gain.gain.setValueAtTime(0.25, this.ctx.currentTime + idx * 0.1);
+        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + idx * 0.1 + 0.5);
         osc.connect(gain);
         gain.connect(this.ctx.destination);
-        osc.start(this.ctx.currentTime + n.t);
-        osc.stop(this.ctx.currentTime + n.t + 0.4);
+        osc.start(this.ctx.currentTime + idx * 0.1);
+        osc.stop(this.ctx.currentTime + idx * 0.1 + 0.5);
       });
     },
 
@@ -281,23 +267,23 @@
       this.resume();
       const osc = this.ctx.createOscillator();
       const gain = this.ctx.createGain();
-      osc.type = 'sine';
+      osc.type = 'sawtooth';
       osc.frequency.setValueAtTime(320, this.ctx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(180, this.ctx.currentTime + 0.25);
-      gain.gain.setValueAtTime(0.25, this.ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.25);
+      osc.frequency.exponentialRampToValueAtTime(140, this.ctx.currentTime + 0.2);
+      gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.2);
       osc.connect(gain);
       gain.connect(this.ctx.destination);
       osc.start();
-      osc.stop(this.ctx.currentTime + 0.25);
+      osc.stop(this.ctx.currentTime + 0.2);
     },
 
     playCheer() {
       if (!state.soundEnabled) return;
-      const cheers = ['sound_super.mp3', 'sound_very_good.mp3', 'sound_nice.mp3', 'sound_win_puzzle.mp3'];
-      const c = cheers[Math.floor(Math.random() * cheers.length)];
       try {
-        const audio = new Audio(`sounds/${c}`);
+        const cheerSounds = ['sound_super.mp3', 'sound_nice.mp3', 'sound_very_good.mp3', 'sound_win_puzzle.mp3'];
+        const chosen = cheerSounds[Math.floor(Math.random() * cheerSounds.length)];
+        const audio = new Audio(`sounds/${chosen}`);
         audio.volume = 0.85;
         audio.play().catch(() => this.playFanfare());
       } catch (e) {
@@ -318,7 +304,8 @@
   };
 
   /* ==========================================================================
-     SPEECH SYNTHESIS CONTROLLER (TALKING ENGINE)
+     TALKING SPEECH ENGINE (BILINGUAL CHILD VOICE)
+     "And kotha bolar sathe sathe english er sathe jno bangla tao bole"
      ========================================================================== */
   const SpeechEngine = {
     synth: window.speechSynthesis,
@@ -377,8 +364,8 @@
     },
 
     speak(text, options = {}) {
-      if (!this.synth) return Promise.resolve();
-      this.synth.cancel(); // Stop any pending speech
+      if (!this.synth || !state.soundEnabled) return Promise.resolve();
+      this.synth.cancel();
 
       return new Promise((resolve) => {
         const utterance = new SpeechSynthesisUtterance(text);
@@ -394,19 +381,17 @@
           utterance.voice = state.settings.voiceEn;
         }
 
-        // Mascot talking animation triggers
         utterance.onstart = () => {
-          DOM.mascotCharacter.classList.add('is-talking');
+          if (DOM.mascotCharacter) DOM.mascotCharacter.classList.add('is-talking');
         };
 
         utterance.onend = () => {
-          DOM.mascotCharacter.classList.remove('is-talking');
+          if (DOM.mascotCharacter) DOM.mascotCharacter.classList.remove('is-talking');
           resolve();
         };
 
         utterance.onerror = (e) => {
-          DOM.mascotCharacter.classList.remove('is-talking');
-          console.warn('Speech error:', e);
+          if (DOM.mascotCharacter) DOM.mascotCharacter.classList.remove('is-talking');
           resolve();
         };
 
@@ -415,39 +400,40 @@
     },
 
     speakEnglish(word, slow = true) {
-      const rate = slow ? 0.68 : 0.76;
-      const pitch = 1.38; // Sweet, bright kid tone
+      const rate = slow ? 0.68 : 0.74;
+      const pitch = 1.38;
       return this.speak(word, { lang: 'en-US', rate, pitch, voice: state.settings.voiceEn });
     },
 
     speakBengali(text, slow = true) {
-      const rate = slow ? 0.66 : 0.74;
-      const pitch = 1.32; // Melodic, affectionate child-friendly tone
+      const rate = slow ? 0.66 : 0.72;
+      const pitch = 1.32;
       return this.speak(text, { lang: 'bn-BD', rate, pitch, voice: state.settings.voiceBn });
     },
 
+    // Sequential Melodic Bilingual Learning (English first, then Bengali meaning)
     async speakBilingual(word, meaning, slow = true) {
-      if (!this.synth) return;
-      // 1. First speak English in clear, slow child-like voice
+      if (!this.synth || !state.soundEnabled) return;
+      // 1. Speak English word
       await this.speakEnglish(word, slow);
 
-      // Play soft melodic transition sparkle chime between languages
+      // Soft musical sparkle chime between languages
       SoundFX.playSparkle();
 
-      // Rhythmic musical pause (650ms) so child can learn in a sing-song way
-      await new Promise(r => setTimeout(r, 650));
+      // Pause for comprehension (450ms)
+      await new Promise(r => setTimeout(r, 450));
 
-      // 2. Then speak Bengali meaning in sweet melodic child voice
+      // 2. Speak Bengali meaning
       await this.speakBengali(meaning, slow);
     },
 
     async spellOut(word, meaning = null) {
-      if (!this.synth) return;
+      if (!this.synth || !state.soundEnabled) return;
       const letters = word.toUpperCase().split('');
       for (const char of letters) {
         if (/[A-Z]/.test(char)) {
           await this.speak(char, { lang: 'en-US', rate: 0.75 });
-          await new Promise(r => setTimeout(r, 120));
+          await new Promise(r => setTimeout(r, 110));
         }
       }
       await new Promise(r => setTimeout(r, 200));
@@ -460,7 +446,7 @@
   };
 
   /* ==========================================================================
-     SPEECH RECOGNITION (VOICE INPUT FOR KIDS)
+     SPEECH RECOGNITION (VOICE PRACTICE FOR KIDS)
      ========================================================================== */
   const SpeechRecognizer = {
     recognition: null,
@@ -478,35 +464,26 @@
     },
 
     startListening(targetWord, onResultCallback, onEndCallback) {
-      if (!this.isSupported || !this.recognition) {
-        alert('আপনার ব্রাউজারে মাইক স্পিচ রিকগনিশন সাপোর্ট নেই। গুগল ক্রোম (Google Chrome) ব্যবহার করুন।');
+      if (!this.isSupported) {
+        alert('আপনার ব্রাউজার বা ডিভাইসে মাইক্রোফোন সাপোর্ট নেই।');
         if (onEndCallback) onEndCallback();
         return;
       }
 
-      this.recognition.onstart = () => {
-        state.speaking.isListening = true;
-        DOM.btnMicListen.classList.add('is-recording');
-        DOM.speechStatus.textContent = 'শুনছি... এখন বলো!';
-      };
-
       this.recognition.onresult = (event) => {
         const spoken = event.results[0][0].transcript.trim().toLowerCase();
-        const target = targetWord.trim().toLowerCase();
-        
-        // Exact match or partial word match (e.g. kid says "a red apple" or "apple")
+        const target = targetWord.toLowerCase().trim();
         const isMatch = spoken === target || spoken.includes(target) || target.includes(spoken);
         onResultCallback(spoken, isMatch);
       };
 
-      this.recognition.onerror = (e) => {
-        console.warn('SpeechRecognition error:', e);
-        DOM.speechStatus.textContent = 'কিছু শোনা যায়নি, আবার চেষ্টা করো!';
+      this.recognition.onerror = () => {
+        if (DOM.speechStatus) DOM.speechStatus.textContent = 'কিছু শোনা যায়নি, আবার চেষ্টা করো!';
       };
 
       this.recognition.onend = () => {
         state.speaking.isListening = false;
-        DOM.btnMicListen.classList.remove('is-recording');
+        if (DOM.btnMicListen) DOM.btnMicListen.classList.remove('is-recording');
         if (onEndCallback) onEndCallback();
       };
 
@@ -519,7 +496,7 @@
   };
 
   /* ==========================================================================
-     CONFETTI CELEBRATION ENGINE
+     CONFETTI REWARD ENGINE
      ========================================================================== */
   const Confetti = {
     canvas: DOM.confettiCanvas,
@@ -540,12 +517,12 @@
       this.canvas.height = window.innerHeight;
     },
 
-    fire(count = 70) {
+    fire(count = 60) {
       this.resize();
       const colors = ['#FF4757', '#FFA502', '#2ED573', '#1E90FF', '#9B59B6', '#FED330'];
       for (let i = 0; i < count; i++) {
         this.particles.push({
-          x: window.innerWidth / 2 + (Math.random() - 0.5) * 200,
+          x: window.innerWidth / 2 + (Math.random() - 0.5) * 180,
           y: window.innerHeight / 2,
           r: Math.random() * 8 + 4,
           color: colors[Math.floor(Math.random() * colors.length)],
@@ -556,9 +533,7 @@
           alpha: 1
         });
       }
-      if (!this.animationId) {
-        this.animate();
-      }
+      if (!this.animationId) this.animate();
     },
 
     animate() {
@@ -568,9 +543,9 @@
       this.particles.forEach((p, idx) => {
         p.x += p.vx;
         p.y += p.vy;
-        p.vy += 0.35; // Gravity
+        p.vy += 0.35;
         p.tilt += p.tiltSpeed;
-        p.alpha -= 0.008;
+        p.alpha -= 0.009;
 
         this.ctx.save();
         this.ctx.globalAlpha = Math.max(0, p.alpha);
@@ -595,126 +570,159 @@
   };
 
   /* ==========================================================================
-     APP CONTROLLER & UI LOGIC
+     HELPERS & UTILITIES
      ========================================================================== */
-
-  function updateStars(amount = 1) {
-    state.stars += amount;
-    localStorage.setItem('kids_stars', state.stars);
-    DOM.starCount.textContent = state.stars;
-    SoundFX.playSparkle();
+  function toBengaliDigits(num) {
+    const bnDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
+    return String(num).replace(/[0-9]/g, d => bnDigits[parseInt(d, 10)]);
   }
 
-  function setMascotMessage(msg, speakIt = false) {
-    DOM.mascotMessage.textContent = msg;
-    if (speakIt) {
-      SpeechEngine.speakBengali(msg);
-    }
+  function updateStars(increment = 1) {
+    state.stars += increment;
+    localStorage.setItem('kids_all_in_one_stars', state.stars);
+    if (DOM.starCount) DOM.starCount.textContent = toBengaliDigits(state.stars);
   }
 
-  // Get currently selected list of vocabulary items
+  function setMascotMessage(msg) {
+    if (DOM.mascotMessage) DOM.mascotMessage.textContent = msg;
+  }
+
   function getCurrentItems() {
-    if (state.currentCategory === 'all') {
-      return state.allCategories.flatMap(c => c.items);
-    }
     const cat = state.allCategories.find(c => c.id === state.currentCategory);
-    return cat ? cat.items : [];
+    return (cat && cat.items) ? cat.items : [];
   }
 
-  // Render category pill navigation
-  function renderCategoryPills() {
-    DOM.categoryPills.innerHTML = '';
+  /* ==========================================================================
+     1. 3D WOODEN BILLBOARD COVERFLOW CONTROLLER (Screenshot 2)
+     ========================================================================== */
+  function renderCoverflow() {
+    if (!DOM.coverflowStage) return;
+    DOM.coverflowStage.innerHTML = '';
 
-    // "All Words" pill
-    const allTotal = state.allCategories.reduce((acc, c) => acc + c.items.length, 0);
-    const allPill = document.createElement('button');
-    allPill.className = `category-pill ${state.currentCategory === 'all' ? 'active' : ''}`;
-    allPill.style.setProperty('--pill-color', '#FF4757');
-    allPill.innerHTML = `
-      <span class="pill-icon">🌈</span>
-      <span class="pill-name">সব শব্দ (All)</span>
-      <span class="pill-count">${allTotal}</span>
-    `;
-    allPill.addEventListener('click', () => {
-      SoundFX.playPop();
-      selectCategory('all');
-    });
-    DOM.categoryPills.appendChild(allPill);
+    const len = CATEGORY_CATALOG.length;
+    if (DOM.categoryIndexBadge) {
+      DOM.categoryIndexBadge.textContent = `${toBengaliDigits(state.coverflowIndex + 1)} / ${toBengaliDigits(len)}`;
+    }
 
-    // Each individual category pill
-    state.allCategories.forEach(cat => {
-      const pill = document.createElement('button');
-      pill.className = `category-pill ${state.currentCategory === cat.id ? 'active' : ''}`;
-      pill.style.setProperty('--pill-color', cat.color);
-      pill.innerHTML = `
-        <span class="pill-icon">${cat.icon}</span>
-        <span class="pill-name">${cat.titleBn} (${cat.title})</span>
-        <span class="pill-count">${cat.items.length}</span>
+    CATEGORY_CATALOG.forEach((cat, idx) => {
+      // Calculate relative circular distance
+      let diff = idx - state.coverflowIndex;
+      if (diff > len / 2) diff -= len;
+      if (diff < -len / 2) diff += len;
+
+      let positionClass = 'hidden';
+      if (diff === 0) positionClass = 'center';
+      else if (diff === -1) positionClass = 'left';
+      else if (diff === 1) positionClass = 'right';
+
+      const card = document.createElement('div');
+      card.className = `coverflow-card ${positionClass}`;
+      card.dataset.index = idx;
+      card.dataset.catId = cat.id;
+
+      card.innerHTML = `
+        <div class="coverflow-img-box">
+          <img src="${cat.image}" alt="${cat.title}" class="coverflow-img" loading="lazy">
+        </div>
+        <h3 class="coverflow-title-en">${cat.title}</h3>
+        <h4 class="coverflow-title-bn">${cat.titleBn}</h4>
+        <span class="coverflow-count-tag">${typeof cat.count === 'number' ? `${toBengaliDigits(cat.count)}টি ছবি` : cat.count}</span>
       `;
-      pill.addEventListener('click', () => {
-        SoundFX.playPop();
-        selectCategory(cat.id);
+
+      card.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (diff === 0) {
+          // Center card tapped -> Open category
+          openActiveCategory();
+        } else if (diff === -1) {
+          coverflowPrev();
+        } else if (diff === 1) {
+          coverflowNext();
+        } else {
+          state.coverflowIndex = idx;
+          renderCoverflow();
+          SoundFX.playPop();
+        }
       });
-      DOM.categoryPills.appendChild(pill);
+
+      DOM.coverflowStage.appendChild(card);
     });
   }
 
-  // ==================== KID CATEGORY PLAYGROUND PORTALS ====================
+  function coverflowPrev() {
+    SoundFX.playPop();
+    const len = CATEGORY_CATALOG.length;
+    state.coverflowIndex = (state.coverflowIndex - 1 + len) % len;
+    renderCoverflow();
+  }
+
+  function coverflowNext() {
+    SoundFX.playPop();
+    const len = CATEGORY_CATALOG.length;
+    state.coverflowIndex = (state.coverflowIndex + 1) % len;
+    renderCoverflow();
+  }
+
+  function openActiveCategory() {
+    const active = CATEGORY_CATALOG[state.coverflowIndex];
+    if (!active) return;
+
+    SoundFX.playSparkle();
+    SoundFX.playPop();
+
+    if (active.isMode) {
+      switchMode(active.isMode);
+    } else {
+      selectCategory(active.id);
+      switchMode('cards');
+    }
+  }
+
+  // Mobile Touch Swipe on Wooden Billboard
+  function setupCoverflowSwipe() {
+    const stage = document.querySelector('.wooden-billboard');
+    if (!stage) return;
+
+    let startX = 0;
+    let endX = 0;
+
+    stage.addEventListener('touchstart', (e) => {
+      startX = e.touches[0].clientX;
+    }, { passive: true });
+
+    stage.addEventListener('touchend', (e) => {
+      endX = e.changedTouches[0].clientX;
+      const diff = endX - startX;
+      if (Math.abs(diff) > 40) {
+        if (diff > 0) coverflowPrev();
+        else coverflowNext();
+      }
+    }, { passive: true });
+  }
+
+  // Render Full Category Grid (Toggleable Option)
   function renderKidCategoryGrid() {
     if (!DOM.kidCategoryGrid) return;
     DOM.kidCategoryGrid.innerHTML = '';
 
-    const categoryPreviews = [
-      { id: 'fruits', title: 'Fruits', titleBn: 'ফলমূল', icon: '🍎', image: 'images/apple.png', count: 14, theme: 'cat-theme-fruits' },
-      { id: 'animals', title: 'Animals', titleBn: 'পশুপাখি', icon: '🦁', image: 'images/lion.png', count: 7, theme: 'cat-theme-animals' },
-      { id: 'birds', title: 'Birds', titleBn: 'পাখি', icon: '🦜', image: 'images/swan.png', count: 5, theme: 'cat-theme-birds' },
-      { id: 'insects', title: 'Insects', titleBn: 'পোকামাকড়', icon: '🦋', image: 'images/butterfly.png', count: 5, theme: 'cat-theme-insects' },
-      { id: 'flowers', title: 'Flowers', titleBn: 'সুন্দর ফুল', icon: '🌸', image: 'images/rose.png', count: 4, theme: 'cat-theme-flowers' },
-      { id: 'vehicles', title: 'Vehicles', titleBn: 'যানবাহন', icon: '🚗', image: 'images/car.png', count: 6, theme: 'cat-theme-vehicles' },
-      { id: 'household', title: 'My Home', titleBn: 'আমার ঘর', icon: '🛋️', image: 'images/bed.png', count: 9, theme: 'cat-theme-household' },
-      { id: 'body_parts', title: 'Body Parts', titleBn: 'শরীরের অঙ্গ', icon: '🧍', image: 'images/face.png', count: 44, theme: 'cat-theme-body' },
-      { id: 'nature', title: 'Nature', titleBn: 'সুন্দর প্রকৃতি', icon: '🌊', image: 'images/mountain.png', count: 8, theme: 'cat-theme-nature' },
-      { id: 'games', title: 'Fun Games', titleBn: 'মজার খেলা', icon: '🎮', image: 'images/grapes.png', count: '৩টি খেলা', theme: 'cat-theme-games', isGames: true }
-    ];
-
-    categoryPreviews.forEach(cat => {
+    CATEGORY_CATALOG.forEach(cat => {
       const card = document.createElement('div');
-      card.className = `kid-portal-card ${cat.theme}`;
+      card.className = 'kid-portal-card';
       card.dataset.catId = cat.id;
 
       card.innerHTML = `
-        <div class="kid-portal-shine"></div>
-        <div class="kid-portal-badge">
-          <span class="portal-badge-icon">${cat.icon}</span>
-          <span class="portal-badge-count">${typeof cat.count === 'number' ? `${toBengaliDigits(cat.count)}টি ছবি` : cat.count}</span>
-        </div>
-        <div class="kid-portal-img-wrap">
-          <img src="${cat.image}" alt="${cat.title}" loading="lazy" class="kid-portal-img">
-        </div>
-        <div class="kid-portal-title-box">
-          <h3 class="kid-portal-bangla">${cat.titleBn}</h3>
-          <span class="kid-portal-english">${cat.title}</span>
-        </div>
-        <div class="kid-portal-tap-hint">
-          <span>ট্যাপ করো 👆</span>
-        </div>
+        <img src="${cat.image}" alt="${cat.title}" loading="lazy" class="kid-portal-img">
+        <h3 class="kid-portal-bangla">${cat.titleBn}</h3>
+        <span class="kid-portal-english">${cat.title}</span>
       `;
 
       card.addEventListener('click', () => {
         SoundFX.playPop();
-        SoundFX.playCheer();
-        Confetti.fire(45);
-
-        if (cat.isGames) {
-          switchMode('quiz');
+        if (cat.isMode) {
+          switchMode(cat.isMode);
         } else {
           selectCategory(cat.id);
           switchMode('cards');
-          setCardsSubView('jumbo');
-          const items = getCurrentItems();
-          if (items.length > 0) {
-            updateJumboStage(items[0], true);
-          }
         }
       });
 
@@ -722,114 +730,19 @@
     });
   }
 
-  // ==================== UNIFIED MODE SWITCHER ====================
-  function switchMode(mode) {
-    state.currentMode = mode;
-
-    // Update Tab UI
-    DOM.modeTabs.forEach(t => {
-      if (t.dataset.mode === mode) {
-        t.classList.add('active');
-      } else {
-        t.classList.remove('active');
-      }
-    });
-
-    // Update Panels UI
-    DOM.viewPanels.forEach(p => p.classList.remove('active'));
-    const activePanel = document.getElementById(`view-${mode}`);
-    if (activePanel) activePanel.classList.add('active');
-
-    // Category pills bar visibility: hide in home mode to keep screen clean, show in cards mode
-    if (DOM.categorySection) {
-      DOM.categorySection.style.display = (mode === 'cards') ? 'block' : 'none';
-    }
-
-    // Scroll top smoothly
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-
-    // Mode specific triggers
-    if (mode === 'home') {
-      setMascotMessage('হ্যালো ছোট্ট সোনা! চলো ছবি দেখে শিখি ও খেলি! 🎈');
-    } else if (mode === 'cards') {
-      renderCards();
-      setCardsSubView('jumbo');
-    } else if (mode === 'quiz') {
-      startQuizQuestion();
-    } else if (mode === 'speak') {
-      loadSpeakingTarget();
-    } else if (mode === 'match') {
-      setupMemoryMatch();
-    } else if (mode === 'autoplay') {
-      startAutoplay();
-    }
-
-    // Pause autoplay if leaving autoplay mode
-    if (mode !== 'autoplay' && state.autoplay.isPlaying) {
-      pauseAutoplay();
-    }
-  }
-
-  // Toggle between Jumbo 3D Book and All Cards Grid
-  function setCardsSubView(subView) {
-    if (!DOM.btnToggleJumbo || !DOM.btnToggleGrid) return;
-    if (subView === 'jumbo') {
-      DOM.btnToggleJumbo.classList.add('active');
-      DOM.btnToggleGrid.classList.remove('active');
-      if (DOM.jumboStage) DOM.jumboStage.style.display = 'block';
-      if (DOM.gridViewContainer) DOM.gridViewContainer.style.display = 'none';
-    } else {
-      DOM.btnToggleGrid.classList.add('active');
-      DOM.btnToggleJumbo.classList.remove('active');
-      if (DOM.jumboStage) DOM.jumboStage.style.display = 'none';
-      if (DOM.gridViewContainer) DOM.gridViewContainer.style.display = 'block';
-      renderCards();
-    }
-  }
-
+  /* ==========================================================================
+     2. SINGLE BIG ITEM SHOWCASE (Screenshot 0)
+     ========================================================================== */
   function selectCategory(catId) {
     state.currentCategory = catId;
-    renderCategoryPills();
-
-    // Update Category Info Title & Count
-    if (catId === 'all') {
-      DOM.currentCatIcon.textContent = '🌈';
-      DOM.currentCatTitle.textContent = 'সব শব্দ (All Vocabulary)';
-      const total = state.allCategories.reduce((acc, c) => acc + c.items.length, 0);
-      DOM.currentCatCount.textContent = `${total}টি শব্দ`;
-      setMascotMessage('সব শব্দ একসাথে দেখতে পাচ্ছ! যেকোনো ছবিতে চাপ দাও 🎈');
-    } else {
-      const cat = state.allCategories.find(c => c.id === catId);
-      if (cat) {
-        DOM.currentCatIcon.textContent = cat.icon;
-        DOM.currentCatTitle.textContent = `${cat.titleBn} (${cat.title})`;
-        DOM.currentCatCount.textContent = `${cat.items.length}টি শব্দ`;
-        setMascotMessage(`এখন আমরা শিখব ${cat.titleBn} (${cat.title})! কার্ডে ট্যাপ করো 🐻`);
-      }
-    }
-
-    renderCards();
-    const currentItems = getCurrentItems();
-    if (currentItems.length > 0) {
-      updateJumboStage(currentItems[0], false);
-    }
-
-    if (state.currentMode === 'quiz') startQuizQuestion();
-    if (state.currentMode === 'speak') loadSpeakingTarget();
-    if (state.currentMode === 'match') setupMemoryMatch();
-    if (state.currentMode === 'autoplay' && state.autoplay.isPlaying) {
-      state.autoplay.currentIndex = 0;
-      playAutoplaySlide();
+    state.currentJumboIndex = 0;
+    const items = getCurrentItems();
+    if (items.length > 0) {
+      updateJumboStage(items[0], true);
     }
   }
 
-  // ==================== JUMBO 3D STAGE CONTROLLER ====================
-  function toBengaliDigits(num) {
-    const bnDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
-    return String(num).replace(/[0-9]/g, d => bnDigits[parseInt(d, 10)]);
-  }
-
-  function updateJumboStage(item, autoSpeak = false) {
+  function updateJumboStage(item, autoSpeak = true) {
     if (!item) return;
     state.currentJumboItem = item;
 
@@ -839,10 +752,10 @@
 
     let catName = 'ফলমূল';
     let catIcon = '🍎';
-    const cat = state.allCategories.find(c => c.items.some(i => i.id === item.id));
+    const cat = state.allCategories.find(c => c.id === state.currentCategory);
     if (cat) {
       catName = `${cat.titleBn} (${cat.title})`;
-      catIcon = cat.icon;
+      catIcon = cat.icon || '🍎';
     }
 
     if (DOM.jumboCatBadge) {
@@ -854,9 +767,9 @@
     if (DOM.jumboImg) {
       DOM.jumboImg.src = item.image;
       DOM.jumboImg.alt = `${item.word} 3D`;
-      DOM.jumboImg.classList.remove('jumbo-pop-anim');
+      DOM.jumboImg.classList.remove('bounce-pop');
       void DOM.jumboImg.offsetWidth;
-      DOM.jumboImg.classList.add('jumbo-pop-anim');
+      DOM.jumboImg.classList.add('bounce-pop');
     }
     if (DOM.jumboWord) {
       DOM.jumboWord.textContent = item.word;
@@ -865,7 +778,7 @@
       DOM.jumboSpellingPill.textContent = item.word.toUpperCase().split('').join(' • ');
     }
     if (DOM.jumboPron) {
-      DOM.jumboPron.textContent = item.pron;
+      DOM.jumboPron.textContent = `(উচ্চারণ: ${item.pron})`;
     }
     if (DOM.jumboMeaning) {
       DOM.jumboMeaning.textContent = item.meaning;
@@ -874,24 +787,15 @@
       DOM.jumboSentence.textContent = item.sentence || `Look at this ${item.word}!`;
     }
 
-    // Reset mic feedback in Jumbo stage
     if (DOM.jumboMicFeedback) {
       DOM.jumboMicFeedback.style.display = 'none';
       DOM.jumboMicFeedback.textContent = '';
     }
 
-    // Update active highlight on cards grid
-    document.querySelectorAll('.word-card').forEach(c => {
-      if (c.dataset.wordId === item.id) {
-        c.classList.add('is-jumbo-active');
-      } else {
-        c.classList.remove('is-jumbo-active');
-      }
-    });
-
+    // AUTOMATIC BILINGUAL PRONUNCIATION (English first, then Bengali)
     if (autoSpeak) {
       SpeechEngine.speakBilingual(item.word, item.meaning);
-      setMascotMessage(`${item.word} — ${item.meaning}!`);
+      setMascotMessage(`${item.word} — অর্থ: ${item.meaning}! 🎈`);
     }
   }
 
@@ -911,546 +815,511 @@
     updateJumboStage(items[state.currentJumboIndex], true);
   }
 
-  function handleJumboMic() {
-    if (!state.currentJumboItem) return;
-    const target = state.currentJumboItem.word;
-    SoundFX.playPop();
-    if (DOM.jumboMicFeedback) {
-      DOM.jumboMicFeedback.style.display = 'block';
-      DOM.jumboMicFeedback.innerHTML = `🎙️ শুনছি... মুখে বলো: <strong>"${target}"</strong>!`;
-    }
+  // Mobile Touch Swipe on Big White Card
+  function setupJumboSwipe() {
+    const card = DOM.itemWhiteCard;
+    if (!card) return;
 
-    SpeechRecognizer.startListening(
-      target,
-      (spoken, isMatch) => {
-        if (!DOM.jumboMicFeedback) return;
-        if (isMatch) {
-          SoundFX.playCorrect();
-          SoundFX.playCheer();
-          Confetti.fire(60);
-          updateStars(2);
-          DOM.jumboMicFeedback.innerHTML = `<span style="color:#10B981;">🎉 দারুণ হয়েছে! You said: <strong>"${spoken}"</strong>! ⭐ +২ স্টার</span>`;
-          setMascotMessage(`সাবাশ! অসাধারণ উচ্চারণ করেছ: "${target}"! ⭐`, false);
-        } else {
-          SoundFX.playBoing();
-          DOM.jumboMicFeedback.innerHTML = `<span style="color:#EF4444;">🙂 তুমি বলেছ: <em>"${spoken}"</em>। আবার সুন্দর করে বলো: <strong>"${target}"</strong>!</span>`;
-          setMascotMessage(`আবার চেষ্টা করো বন্ধু! বলো "${target}" 🐻`, false);
-        }
-      },
-      () => {}
-    );
-  }
+    let startX = 0;
+    let endX = 0;
 
-  // Render flashcards grid
-  function renderCards() {
-    DOM.cardsGrid.innerHTML = '';
-    const items = getCurrentItems();
-    const query = state.searchQuery.toLowerCase().trim();
+    card.addEventListener('touchstart', (e) => {
+      startX = e.touches[0].clientX;
+    }, { passive: true });
 
-    const filtered = items.filter(item => {
-      if (!query) return true;
-      return item.word.toLowerCase().includes(query) ||
-             item.pron.toLowerCase().includes(query) ||
-             item.meaning.toLowerCase().includes(query);
-    });
-
-    if (filtered.length === 0) {
-      DOM.cardsGrid.innerHTML = `
-        <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: #7F8C8D;">
-          <h3>কোনো শব্দ পাওয়া যায়নি! অন্য কিছু লিখে খুঁজুন।</h3>
-        </div>
-      `;
-      return;
-    }
-
-    filtered.forEach((item, index) => {
-      const card = document.createElement('div');
-      card.className = 'word-card';
-      card.dataset.wordId = item.id;
-      if (state.currentJumboItem && state.currentJumboItem.id === item.id) {
-        card.classList.add('is-jumbo-active');
+    card.addEventListener('touchend', (e) => {
+      endX = e.changedTouches[0].clientX;
+      const diff = endX - startX;
+      if (Math.abs(diff) > 40) {
+        if (diff > 0) handleJumboPrev();
+        else handleJumboNext();
       }
-      card.style.setProperty('--card-theme', getCategoryColor(item));
-
-      card.innerHTML = `
-        <button class="card-speaker-badge" title="উচ্চারণ শোনো">🔊</button>
-        <div class="card-img-wrap">
-          <img src="${item.image}" alt="${item.word}" loading="lazy">
-        </div>
-        <h3 class="card-english">${item.word}</h3>
-        <p class="card-pron">${item.pron}</p>
-        <h4 class="card-bangla">${item.meaning}</h4>
-        <div class="card-actions-mini">
-          <button class="card-btn-mini listen-both">🔊 English + বাংলা</button>
-          <button class="card-btn-mini listen-slow">🐢 ধীরে ধীরে</button>
-        </div>
-      `;
-
-      // Click card body -> Select in Jumbo 3D Stage & Speak Bilingual!
-      card.addEventListener('click', (e) => {
-        if (e.target.closest('.card-btn-mini') || e.target.closest('.card-speaker-badge')) return;
-        SoundFX.playPop();
-        updateJumboStage(item, true);
-
-        // Smooth scroll up to jumbo stage if needed
-        if (DOM.jumboStage) {
-          const rect = DOM.jumboStage.getBoundingClientRect();
-          if (rect.top < -30 || rect.bottom < 120) {
-            DOM.jumboStage.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-          }
-        }
-      });
-
-      // Quick Bilingual Audio: English first, then Bengali
-      const speakerBadge = card.querySelector('.card-speaker-badge');
-      const btnBoth = card.querySelector('.listen-both');
-      [speakerBadge, btnBoth].forEach(btn => {
-        btn.addEventListener('click', (e) => {
-          e.stopPropagation();
-          SoundFX.playPop();
-          updateJumboStage(item, false);
-          SpeechEngine.speakBilingual(item.word, item.meaning);
-          setMascotMessage(`${item.word} — ${item.meaning}!`);
-        });
-      });
-
-      // Slow Bilingual Audio
-      const btnSlow = card.querySelector('.listen-slow');
-      btnSlow.addEventListener('click', (e) => {
-        e.stopPropagation();
-        SoundFX.playPop();
-        updateJumboStage(item, false);
-        SpeechEngine.speakBilingual(item.word, item.meaning, true);
-        setMascotMessage(`${item.word} — ${item.meaning} (ধীরে ধীরে)!`);
-      });
-
-      DOM.cardsGrid.appendChild(card);
-    });
+    }, { passive: true });
   }
 
-  function getCategoryColor(item) {
-    for (const c of state.allCategories) {
-      if (c.items.some(i => i.id === item.id)) {
-        return c.color;
-      }
-    }
-    return '#FF4757';
-  }
-
-  // ==================== WORD MODAL ====================
-  let currentModalItem = null;
-
-  function openWordModal(item) {
-    currentModalItem = item;
-    const items = getCurrentItems();
-    const idx = items.findIndex(i => i.id === item.id);
-    state.currentWordIndex = idx >= 0 ? idx : 0;
-
-    updateModalUI();
-    DOM.wordModal.classList.add('active');
-
-    // Auto pronounce word upon opening: First English, then Bengali meaning
-    SpeechEngine.speakBilingual(item.word, item.meaning);
-  }
-
-  function updateModalUI() {
-    const item = currentModalItem;
-    if (!item) return;
-
-    DOM.modalImg.src = item.image;
-    DOM.modalWord.textContent = item.word;
-    DOM.modalPron.textContent = item.pron;
-    DOM.modalMeaning.textContent = item.meaning;
-    DOM.modalSentence.textContent = item.sentence || `Look at the ${item.word}!`;
-    DOM.modalMicTarget.textContent = `"${item.word}"`;
-    DOM.modalMicFeedback.textContent = '';
-
-    const items = getCurrentItems();
-    DOM.modalCounter.textContent = `${state.currentWordIndex + 1} / ${items.length}`;
-  }
-
-  function closeModal() {
-    DOM.wordModal.classList.remove('active');
-  }
-
-  // ==================== MODE 2: LISTEN & FIND QUIZ ====================
+  /* ==========================================================================
+     3. QUIZ: 4-CARD PHOTO FINDER (Screenshot 3)
+     ========================================================================== */
   function startQuizQuestion() {
-    const items = getCurrentItems();
-    if (items.length < 4) return;
+    const allItems = state.allCategories.flatMap(c => c.items);
+    if (allItems.length < 4) return;
 
     // Pick 1 correct item and 3 distractors
-    const shuffled = [...items].sort(() => 0.5 - Math.random());
+    const shuffled = [...allItems].sort(() => 0.5 - Math.random());
     const correct = shuffled[0];
     const options = shuffled.slice(0, 4).sort(() => 0.5 - Math.random());
 
     state.quiz.currentQuestion = { correct, options };
     state.quiz.answered = false;
 
-    DOM.quizQuestionText.textContent = `বলো তো, কোনটি "${correct.word}"? (${correct.meaning})`;
-    DOM.quizHint.textContent = `ছবিতে ট্যাপ করে সঠিক উত্তর বেছে নাও!`;
-    DOM.quizFeedback.textContent = '';
+    if (DOM.quizCounter) {
+      DOM.quizCounter.textContent = `${toBengaliDigits(state.quiz.qIndex)} / ${toBengaliDigits(state.quiz.totalQuestions)}`;
+    }
+    if (DOM.quizQuestionText) {
+      DOM.quizQuestionText.textContent = `কোনটি "${correct.word}"? (${correct.meaning})`;
+    }
+    if (DOM.quizHint) {
+      DOM.quizHint.textContent = 'সঠিক ছবিতে ট্যাপ করো!';
+    }
+    if (DOM.quizFeedback) {
+      DOM.quizFeedback.textContent = '';
+    }
 
-    // Render options
-    DOM.quizOptions.innerHTML = '';
-    options.forEach(opt => {
-      const optCard = document.createElement('div');
-      optCard.className = 'quiz-option-card';
-      optCard.innerHTML = `
-        <img src="${opt.image}" alt="${opt.word}">
-        <span class="option-word">${opt.word}</span>
-      `;
+    // Render 4 Polaroid photo cards
+    if (DOM.quizOptions) {
+      DOM.quizOptions.innerHTML = '';
+      options.forEach(opt => {
+        const card = document.createElement('div');
+        card.className = 'quiz-card';
+        card.innerHTML = `
+          <img src="${opt.image}" alt="${opt.word}" loading="lazy">
+          <span class="quiz-card-label">${opt.word}</span>
+        `;
 
-      optCard.addEventListener('click', () => handleQuizAnswer(opt, optCard));
-      DOM.quizOptions.appendChild(optCard);
-    });
+        card.addEventListener('click', () => handleQuizAnswer(opt, card));
+        DOM.quizOptions.appendChild(card);
+      });
+    }
 
-    // Voice announcement for kids: speaks English first, then Bengali meaning
-    SpeechEngine.speakBilingual(correct.word, `${correct.meaning} কোথায়?`);
+    // Voice announcement (English + Bengali)
+    SpeechEngine.speakBilingual(correct.word, `${correct.meaning} কোনটি?`);
   }
 
   function handleQuizAnswer(selected, cardEl) {
     if (state.quiz.answered) return;
     state.quiz.answered = true;
-    state.quiz.total++;
 
     const correct = state.quiz.currentQuestion.correct;
     if (selected.id === correct.id) {
       // Correct!
       cardEl.classList.add('correct');
-      state.quiz.score++;
-      state.quiz.streak++;
+      state.quiz.correctCount++;
       updateStars(2);
-      Confetti.fire(50);
+      Confetti.fire(55);
       SoundFX.playCorrect();
       SoundFX.playCheer();
 
-      DOM.quizFeedback.innerHTML = `<span style="color:#00B894;">🎉 দারুণ! একদম সঠিক! (${correct.word} - ${correct.meaning})</span>`;
+      if (DOM.quizScoreCorrect) DOM.quizScoreCorrect.textContent = state.quiz.correctCount;
+      if (DOM.quizFeedback) {
+        DOM.quizFeedback.innerHTML = `<span style="color:#00B894;">🎉 দারুণ! একদম সঠিক! (${correct.word} - ${correct.meaning})</span>`;
+      }
       setMascotMessage(`সাবাশ! ${correct.word} মানে ${correct.meaning}! ⭐ +২ স্টার!`);
-      // Celebratory bilingual voice feedback
-      SpeechEngine.speakBilingual(correct.word, correct.meaning);
+      SpeechEngine.speakBilingual(correct.word, `বাহ্! চমৎকার! ${correct.meaning}!`);
 
       setTimeout(() => {
+        state.quiz.qIndex = (state.quiz.qIndex % state.quiz.totalQuestions) + 1;
         startQuizQuestion();
-      }, 2000);
+      }, 1800);
     } else {
       // Wrong
       cardEl.classList.add('wrong');
-      state.quiz.streak = 0;
+      state.quiz.wrongCount++;
       SoundFX.playBoing();
 
-      DOM.quizFeedback.innerHTML = `<span style="color:#FF7675;">হলো না! সঠিক উত্তরটি ছিল: ${correct.word} (${correct.meaning})</span>`;
-      setMascotMessage(`একটু ভুল হয়েছে, চলো আবার চেষ্টা করি!`, true);
+      if (DOM.quizScoreWrong) DOM.quizScoreWrong.textContent = state.quiz.wrongCount;
+      if (DOM.quizFeedback) {
+        DOM.quizFeedback.innerHTML = `<span style="color:#FF7675;">🙂 সঠিক উত্তরটি ছিল: ${correct.word} (${correct.meaning})</span>`;
+      }
+      setMascotMessage(`একটু ভুল হয়েছে, চলো আবার চেষ্টা করি!`);
 
       setTimeout(() => {
         startQuizQuestion();
-      }, 2000);
+      }, 1800);
     }
-
-    DOM.quizScore.textContent = `${state.quiz.score} / ${state.quiz.total}`;
-    DOM.quizStreak.textContent = state.quiz.streak;
   }
 
-  // ==================== MODE 3: SPEAK TO MASCOT ====================
+  /* ==========================================================================
+     4. PAINT & DRAW STUDIO
+     ========================================================================== */
+  function initPaintStudio() {
+    const canvas = DOM.paintCanvas;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+
+    // Fill white background initially
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    savePaintState();
+
+    let isDrawing = false;
+    let lastX = 0;
+    let lastY = 0;
+
+    // Palette Colors
+    const colors = [
+      '#FF4757', '#FFA502', '#FED330', '#2ED573', '#1DD1A1',
+      '#00D2D3', '#54A0FF', '#5F27CD', '#FF9FF3', '#795548',
+      '#2C3A47', '#FFFFFF'
+    ];
+
+    if (DOM.paintColorsBar) {
+      DOM.paintColorsBar.innerHTML = '';
+      colors.forEach((col, idx) => {
+        const swatch = document.createElement('div');
+        swatch.className = `paint-color-swatch ${idx === 0 ? 'active' : ''}`;
+        swatch.style.backgroundColor = col;
+        swatch.addEventListener('click', () => {
+          state.paint.currentColor = col;
+          state.paint.isEraser = false;
+          state.paint.activeStamp = null;
+          document.querySelectorAll('.paint-color-swatch').forEach(s => s.classList.remove('active'));
+          swatch.classList.add('active');
+          if (DOM.btnPaintEraser) DOM.btnPaintEraser.classList.remove('active');
+          document.querySelectorAll('.stamp-chip').forEach(st => st.classList.remove('active'));
+          SoundFX.playPop();
+        });
+        DOM.paintColorsBar.appendChild(swatch);
+      });
+    }
+
+    // Brush Size buttons
+    document.querySelectorAll('.brush-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        state.paint.currentSize = parseInt(btn.dataset.size, 10);
+        document.querySelectorAll('.brush-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        SoundFX.playPop();
+      });
+    });
+
+    // Eraser Button
+    if (DOM.btnPaintEraser) {
+      DOM.btnPaintEraser.addEventListener('click', () => {
+        state.paint.isEraser = !state.paint.isEraser;
+        DOM.btnPaintEraser.classList.toggle('active', state.paint.isEraser);
+        state.paint.activeStamp = null;
+        document.querySelectorAll('.stamp-chip').forEach(st => st.classList.remove('active'));
+        SoundFX.playPop();
+      });
+    }
+
+    // Stamp Buttons
+    document.querySelectorAll('.stamp-chip').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const stamp = btn.dataset.stamp;
+        if (state.paint.activeStamp === stamp) {
+          state.paint.activeStamp = null;
+          btn.classList.remove('active');
+        } else {
+          state.paint.activeStamp = stamp;
+          document.querySelectorAll('.stamp-chip').forEach(s => s.classList.remove('active'));
+          btn.classList.add('active');
+        }
+        SoundFX.playPop();
+      });
+    });
+
+    // Save canvas state for undo
+    function savePaintState() {
+      state.paint.history.push(ctx.getImageData(0, 0, canvas.width, canvas.height));
+      if (state.paint.history.length > 15) state.paint.history.shift();
+    }
+
+    // Undo
+    if (DOM.btnPaintUndo) {
+      DOM.btnPaintUndo.addEventListener('click', () => {
+        if (state.paint.history.length > 1) {
+          state.paint.history.pop();
+          const prev = state.paint.history[state.paint.history.length - 1];
+          ctx.putImageData(prev, 0, 0);
+          SoundFX.playPop();
+        }
+      });
+    }
+
+    // Clear
+    if (DOM.btnPaintClear) {
+      DOM.btnPaintClear.addEventListener('click', () => {
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        savePaintState();
+        SoundFX.playPop();
+      });
+    }
+
+    // Save/Download drawing
+    if (DOM.btnPaintSave) {
+      DOM.btnPaintSave.addEventListener('click', () => {
+        const link = document.createElement('a');
+        link.download = `kids_drawing_${Date.now()}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+        SoundFX.playCheer();
+        Confetti.fire(45);
+        updateStars(3);
+      });
+    }
+
+    function getCoords(e) {
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      return {
+        x: (clientX - rect.left) * scaleX,
+        y: (clientY - rect.top) * scaleY
+      };
+    }
+
+    function startDraw(e) {
+      isDrawing = true;
+      const coords = getCoords(e);
+      lastX = coords.x;
+      lastY = coords.y;
+
+      // If stamp active, stamp emoji and finish
+      if (state.paint.activeStamp) {
+        ctx.font = '48px serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(state.paint.activeStamp, coords.x, coords.y);
+        savePaintState();
+        SoundFX.playSparkle();
+        isDrawing = false;
+      }
+    }
+
+    function draw(e) {
+      if (!isDrawing || state.paint.activeStamp) return;
+      e.preventDefault();
+      const coords = getCoords(e);
+
+      ctx.beginPath();
+      ctx.moveTo(lastX, lastY);
+      ctx.lineTo(coords.x, coords.y);
+      ctx.strokeStyle = state.paint.isEraser ? '#FFFFFF' : state.paint.currentColor;
+      ctx.lineWidth = state.paint.isEraser ? state.paint.currentSize * 2.5 : state.paint.currentSize;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.stroke();
+
+      lastX = coords.x;
+      lastY = coords.y;
+    }
+
+    function stopDraw() {
+      if (isDrawing) {
+        isDrawing = false;
+        savePaintState();
+      }
+    }
+
+    // Pointer / Mouse / Touch events
+    canvas.addEventListener('mousedown', startDraw);
+    canvas.addEventListener('mousemove', draw);
+    canvas.addEventListener('mouseup', stopDraw);
+    canvas.addEventListener('mouseleave', stopDraw);
+
+    canvas.addEventListener('touchstart', startDraw, { passive: false });
+    canvas.addEventListener('touchmove', draw, { passive: false });
+    canvas.addEventListener('touchend', stopDraw);
+  }
+
+  /* ==========================================================================
+     5. SPEAKING PRACTICE & MEMORY MATCH CONTROLLERS
+     ========================================================================== */
   function loadSpeakingTarget() {
     const items = getCurrentItems();
-    if (items.length === 0) return;
-
-    if (state.speaking.currentIndex >= items.length) {
-      state.speaking.currentIndex = 0;
-    }
-
-    const item = items[state.speaking.currentIndex];
+    if (!items.length) return;
+    const item = items[state.speaking.currentIndex % items.length];
     state.speaking.targetItem = item;
 
-    DOM.speakTargetImg.src = item.image;
-    DOM.speakTargetWord.textContent = item.word;
-    DOM.speakTargetPron.textContent = `উচ্চারণ: ${item.pron}`;
-    DOM.speakTargetMeaning.textContent = `অর্থ: ${item.meaning}`;
-    DOM.speechStatus.textContent = 'মাইক বাটনে চাপ দিয়ে ইংরেজিতে উচ্চারণ করো!';
-    DOM.speechResultBox.innerHTML = '';
+    if (DOM.speakTargetImg) DOM.speakTargetImg.src = item.image;
+    if (DOM.speakTargetWord) DOM.speakTargetWord.textContent = item.word;
+    if (DOM.speakTargetPron) DOM.speakTargetPron.textContent = `উচ্চারণ: ${item.pron}`;
+    if (DOM.speakTargetMeaning) DOM.speakTargetMeaning.textContent = `অর্থ: ${item.meaning}`;
+    if (DOM.speechResultBox) DOM.speechResultBox.innerHTML = '';
+    if (DOM.speechStatus) DOM.speechStatus.textContent = 'মাইক বাটনে চাপ দিয়ে ইংরেজিতে বলো!';
+
+    SpeechEngine.speakBilingual(item.word, item.meaning);
   }
 
-  function listenChildVoice() {
-    const item = state.speaking.targetItem;
-    if (!item) return;
-
-    SoundFX.playPop();
-    SpeechRecognizer.startListening(
-      item.word,
-      (spokenText, isMatch) => {
-        if (isMatch) {
-          Confetti.fire(60);
-          SoundFX.playFanfare();
-          updateStars(3);
-          DOM.speechResultBox.innerHTML = `
-            <span style="color: #00B894; font-size: 24px;">🏆 দারুণ উচ্চারণ! You said: "${spokenText}"! ⭐ +৩</span>
-          `;
-          setMascotMessage(`চমৎকার! তুমি খুব সুন্দর বলেছ: ${item.word}!`, true);
-        } else {
-          SoundFX.playBoing();
-          DOM.speechResultBox.innerHTML = `
-            <span style="color: #E17055;">তুমি বলেছ: "${spokenText}"। চলো আরেকবার চেষ্টা করি! বলো: "${item.word}"</span>
-          `;
-          setMascotMessage(`কাছাকাছি হয়েছ! আবার বলো: ${item.word}`, true);
-        }
-      },
-      () => {
-        DOM.speechStatus.textContent = 'আবার বলতে চাইলে মাইকে চাপ দাও!';
-      }
-    );
-  }
-
-  // ==================== MODE 4: MEMORY MATCH ====================
   function setupMemoryMatch() {
     const items = getCurrentItems();
     if (items.length < 6) return;
 
-    // Pick 6 random items
-    const selected = [...items].sort(() => 0.5 - Math.random()).slice(0, 6);
-    // Create pairs (12 cards)
-    const cardData = [];
-    selected.forEach(item => {
-      cardData.push({ id: item.id, item, type: 'img' });
-      cardData.push({ id: item.id, item, type: 'word' });
-    });
-    // Shuffle
-    cardData.sort(() => 0.5 - Math.random());
+    const chosen = [...items].sort(() => 0.5 - Math.random()).slice(0, 6);
+    const deck = [...chosen, ...chosen].sort(() => 0.5 - Math.random());
 
-    state.match.cards = cardData;
+    state.match.cards = deck;
     state.match.flippedCards = [];
     state.match.matchedPairs = 0;
     state.match.moves = 0;
     state.match.lockBoard = false;
 
-    DOM.matchMoves.textContent = '0';
-    DOM.matchPairs.textContent = '0 / 6';
+    if (DOM.matchMoves) DOM.matchMoves.textContent = '0';
+    if (DOM.matchPairs) DOM.matchPairs.textContent = '0 / 6';
+    if (!DOM.matchGrid) return;
     DOM.matchGrid.innerHTML = '';
 
-    cardData.forEach((data, index) => {
+    deck.forEach((item, idx) => {
       const card = document.createElement('div');
-      card.className = 'memory-card';
-      card.dataset.index = index;
+      card.className = 'match-card';
+      card.dataset.index = idx;
+      card.dataset.id = item.id;
+      card.innerHTML = `<span style="font-size: 28px;">❓</span>`;
 
-      const backContent = data.type === 'img' 
-        ? `<img src="${data.item.image}" alt="${data.item.word}">`
-        : `<span style="font-size:16px; font-weight:700;">${data.item.word}</span><span style="font-size:11px; color:#FF4757;">${data.item.meaning}</span>`;
+      card.addEventListener('click', () => {
+        if (state.match.lockBoard || card.classList.contains('flipped') || card.classList.contains('matched')) return;
 
-      card.innerHTML = `
-        <div class="card-face card-front">❓</div>
-        <div class="card-face card-back">
-          ${backContent}
-        </div>
-      `;
+        SoundFX.playPop();
+        card.classList.add('flipped');
+        card.innerHTML = `<img src="${item.image}" alt="${item.word}">`;
+        state.match.flippedCards.push({ card, item });
 
-      card.addEventListener('click', () => handleMemoryCardClick(card, data));
+        if (state.match.flippedCards.length === 2) {
+          state.match.moves++;
+          if (DOM.matchMoves) DOM.matchMoves.textContent = state.match.moves;
+          checkMatch();
+        }
+      });
+
       DOM.matchGrid.appendChild(card);
     });
-
-    setMascotMessage('একই জোড়ার কার্ড খুঁজে বের করো! 🧠✨');
   }
 
-  function handleMemoryCardClick(cardEl, data) {
-    if (state.match.lockBoard) return;
-    if (cardEl.classList.contains('flipped') || cardEl.classList.contains('matched')) return;
-
-    SoundFX.playPop();
-    cardEl.classList.add('flipped');
-    state.match.flippedCards.push({ cardEl, data });
-
-    // Say English first, then Bengali meaning when flipped
-    SpeechEngine.speakBilingual(data.item.word, data.item.meaning);
-
-    if (state.match.flippedCards.length === 2) {
-      state.match.moves++;
-      DOM.matchMoves.textContent = state.match.moves;
-      checkMemoryMatch();
-    }
-  }
-
-  function checkMemoryMatch() {
+  function checkMatch() {
     state.match.lockBoard = true;
     const [c1, c2] = state.match.flippedCards;
 
-    if (c1.data.id === c2.data.id) {
-      // Match found!
-      setTimeout(() => {
-        c1.cardEl.classList.add('matched');
-        c2.cardEl.classList.add('matched');
-        state.match.matchedPairs++;
-        DOM.matchPairs.textContent = `${state.match.matchedPairs} / 6`;
-        state.match.flippedCards = [];
-        state.match.lockBoard = false;
-        SoundFX.playSparkle();
+    if (c1.item.id === c2.item.id) {
+      c1.card.classList.add('matched');
+      c2.card.classList.add('matched');
+      state.match.matchedPairs++;
+      if (DOM.matchPairs) DOM.matchPairs.textContent = `${state.match.matchedPairs} / 6`;
 
-        if (state.match.matchedPairs === 6) {
-          // Game Completed!
-          Confetti.fire(80);
-          SoundFX.playFanfare();
-          updateStars(5);
-          setMascotMessage('অসাধারণ! তুমি সব জোড়া মিলিয়ে ফেলেছ! 🏆 +৫ স্টার!', true);
-        }
-      }, 500);
+      SoundFX.playCorrect();
+      updateStars(1);
+      SpeechEngine.speakBilingual(c1.item.word, c1.item.meaning);
+
+      state.match.flippedCards = [];
+      state.match.lockBoard = false;
+
+      if (state.match.matchedPairs === 6) {
+        SoundFX.playCheer();
+        Confetti.fire(65);
+        updateStars(5);
+        setMascotMessage('দারুণ! তুমি সব জোড়া মিলিয়ে ফেলেছ! 🏆 +৫ স্টার!');
+      }
     } else {
-      // No match -> Flip back
+      SoundFX.playBoing();
       setTimeout(() => {
-        c1.cardEl.classList.remove('flipped');
-        c2.cardEl.classList.remove('flipped');
+        c1.card.classList.remove('flipped');
+        c2.card.classList.remove('flipped');
+        c1.card.innerHTML = `<span style="font-size: 28px;">❓</span>`;
+        c2.card.innerHTML = `<span style="font-size: 28px;">❓</span>`;
         state.match.flippedCards = [];
         state.match.lockBoard = false;
-      }, 1000);
-    }
-  }
-
-  // ==================== MODE 5: AUTOPLAY STORYBOOK ====================
-  function startAutoplay() {
-    state.autoplay.isPlaying = true;
-    DOM.btnAutoplayPlaypause.textContent = '⏸️';
-    playAutoplaySlide();
-  }
-
-  function pauseAutoplay() {
-    state.autoplay.isPlaying = false;
-    DOM.btnAutoplayPlaypause.textContent = '▶️';
-    if (state.autoplay.timer) {
-      clearTimeout(state.autoplay.timer);
-    }
-  }
-
-  async function playAutoplaySlide() {
-    if (!state.autoplay.isPlaying) return;
-    const items = getCurrentItems();
-    if (items.length === 0) return;
-
-    if (state.autoplay.currentIndex >= items.length) {
-      state.autoplay.currentIndex = 0;
-    }
-
-    const item = items[state.autoplay.currentIndex];
-    DOM.autoplayImg.src = item.image;
-    DOM.autoplayWord.textContent = item.word;
-    DOM.autoplayPron.textContent = `উচ্চারণ: ${item.pron}`;
-    DOM.autoplayMeaning.textContent = `অর্থ: ${item.meaning}`;
-    DOM.autoplaySentence.textContent = item.sentence || `Look at this ${item.word}!`;
-
-    const pct = ((state.autoplay.currentIndex + 1) / items.length) * 100;
-    DOM.autoplayProgress.style.width = `${pct}%`;
-
-    // Speaks English first, then Bengali meaning
-    await SpeechEngine.speakBilingual(item.word, item.meaning);
-
-    // Advance to next after 2.5 seconds if still playing
-    if (state.autoplay.isPlaying) {
-      state.autoplay.timer = setTimeout(() => {
-        state.autoplay.currentIndex++;
-        playAutoplaySlide();
-      }, 2000);
+      }, 900);
     }
   }
 
   /* ==========================================================================
-     EVENT LISTENERS & BINDINGS
+     UNIFIED MODE SWITCHER
      ========================================================================== */
-  function setupEventListeners() {
-    // Mode Switch Tabs
-    DOM.modeTabs.forEach(tab => {
-      tab.addEventListener('click', () => {
-        SoundFX.playPop();
-        const mode = tab.dataset.mode;
-        switchMode(mode);
-      });
+  function switchMode(mode) {
+    state.currentMode = mode;
+
+    DOM.modeTabs.forEach(t => {
+      t.classList.toggle('active', t.dataset.mode === mode);
     });
 
-    // Back to Home Button
-    if (DOM.btnBackHome) {
-      DOM.btnBackHome.addEventListener('click', () => {
-        SoundFX.playPop();
-        switchMode('home');
+    DOM.viewPanels.forEach(p => p.classList.remove('active'));
+    const target = document.getElementById(`view-${mode}`);
+    if (target) target.classList.add('active');
+
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    if (mode === 'quiz') startQuizQuestion();
+    if (mode === 'speak') loadSpeakingTarget();
+    if (mode === 'match') setupMemoryMatch();
+    if (mode === 'home') renderCoverflow();
+  }
+
+  /* ==========================================================================
+     EVENT LISTENERS INITIALIZATION
+     ========================================================================== */
+  function initEventListeners() {
+    // Sound Toggle
+    if (DOM.btnSoundToggle) {
+      DOM.btnSoundToggle.addEventListener('click', () => {
+        state.soundEnabled = !state.soundEnabled;
+        if (DOM.soundIcon) DOM.soundIcon.textContent = state.soundEnabled ? '🔊' : '🔇';
+        if (!state.soundEnabled && window.speechSynthesis) window.speechSynthesis.cancel();
       });
     }
 
-    // Subview Home Buttons (for Quiz, Speak, Match, Autoplay)
-    document.querySelectorAll('.btn-subview-home').forEach(btn => {
+    // Settings Modal
+    if (DOM.btnSettings) {
+      DOM.btnSettings.addEventListener('click', () => {
+        if (DOM.settingsModal) DOM.settingsModal.classList.add('active');
+      });
+    }
+    if (DOM.btnSettingsClose) {
+      DOM.btnSettingsClose.addEventListener('click', () => {
+        if (DOM.settingsModal) DOM.settingsModal.classList.remove('active');
+      });
+    }
+
+    // Mode Tabs Click
+    DOM.modeTabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        SoundFX.playPop();
+        switchMode(tab.dataset.mode);
+      });
+    });
+
+    // Subview Back Buttons -> Back to Home
+    document.querySelectorAll('.btn-subview-home, #btn-back-home').forEach(btn => {
       btn.addEventListener('click', () => {
         SoundFX.playPop();
         switchMode('home');
       });
     });
 
-    // View Toggles: Jumbo 3D Book vs All Cards Grid
-    if (DOM.btnToggleJumbo) {
-      DOM.btnToggleJumbo.addEventListener('click', () => {
+    // 3D Coverflow Arrows
+    if (DOM.btnCoverflowPrev) DOM.btnCoverflowPrev.addEventListener('click', coverflowPrev);
+    if (DOM.btnCoverflowNext) DOM.btnCoverflowNext.addEventListener('click', coverflowNext);
+    if (DOM.btnOpenActiveCategory) DOM.btnOpenActiveCategory.addEventListener('click', openActiveCategory);
+
+    // Toggle All Categories Grid
+    if (DOM.btnToggleAllCats) {
+      DOM.btnToggleAllCats.addEventListener('click', () => {
         SoundFX.playPop();
-        setCardsSubView('jumbo');
-      });
-    }
-    if (DOM.btnToggleGrid) {
-      DOM.btnToggleGrid.addEventListener('click', () => {
-        SoundFX.playPop();
-        setCardsSubView('grid');
-      });
-    }
-
-    // Sound Toggle
-    DOM.btnSoundToggle.addEventListener('click', () => {
-      state.soundEnabled = !state.soundEnabled;
-      DOM.soundIcon.textContent = state.soundEnabled ? '🔊' : '🔇';
-    });
-
-    // Mascot click Easter Egg
-    DOM.mascotCharacter.addEventListener('click', () => {
-      SoundFX.playSparkle();
-      const funGreetings = [
-        "আমি তোমার কথা বলা বন্ধু টিটু! 🐻",
-        "তুমি প্রতিদিন নতুন নতুন শব্দ শিখছো, দারুণ! ⭐",
-        "কোন শব্দটি তোমার সবচেয়ে পছন্দ? আমাকে বলো! 🎈",
-        "চলো একসাথে ইংরেজি আর বাংলা শিখি! ✨"
-      ];
-      const g = funGreetings[Math.floor(Math.random() * funGreetings.length)];
-      setMascotMessage(g, true);
-    });
-
-    // Search bar filter
-    DOM.wordSearch.addEventListener('input', (e) => {
-      state.searchQuery = e.target.value;
-      renderCards();
-    });
-
-    // Jumbo 3D Stage Interactive Events
-    if (DOM.btnJumboTapTalk) {
-      DOM.btnJumboTapTalk.addEventListener('click', () => {
-        if (state.currentJumboItem) {
-          SoundFX.playPop();
-          Confetti.fire(35);
-          SpeechEngine.speakBilingual(state.currentJumboItem.word, state.currentJumboItem.meaning, true);
+        const isHidden = DOM.kidCategoryGrid.style.display === 'none';
+        DOM.kidCategoryGrid.style.display = isHidden ? 'grid' : 'none';
+        if (DOM.txtToggleCats) {
+          DOM.txtToggleCats.textContent = isHidden ? '🔼 গ্রিড বন্ধ করো' : '🗂️ সব বিষয় একসাথে দেখো';
         }
       });
     }
 
-    if (DOM.jumboPedestal) {
-      DOM.jumboPedestal.addEventListener('click', () => {
+    // Big Item Showcase Arrows
+    if (DOM.btnJumboPrev) DOM.btnJumboPrev.addEventListener('click', handleJumboPrev);
+    if (DOM.btnJumboNext) DOM.btnJumboNext.addEventListener('click', handleJumboNext);
+
+    // Tapping Image or Replay -> Bilingual Speak
+    if (DOM.itemImgContainer) {
+      DOM.itemImgContainer.addEventListener('click', () => {
         if (state.currentJumboItem) {
           SoundFX.playPop();
-          Confetti.fire(40);
-          SpeechEngine.speakBilingual(state.currentJumboItem.word, state.currentJumboItem.meaning, true);
+          if (DOM.jumboImg) {
+            DOM.jumboImg.classList.remove('bounce-pop');
+            void DOM.jumboImg.offsetWidth;
+            DOM.jumboImg.classList.add('bounce-pop');
+          }
+          SpeechEngine.speakBilingual(state.currentJumboItem.word, state.currentJumboItem.meaning);
         }
       });
     }
 
-    if (DOM.jumboImg) {
-      DOM.jumboImg.addEventListener('click', (e) => {
-        e.stopPropagation();
+    if (DOM.btnJumboReplay) {
+      DOM.btnJumboReplay.addEventListener('click', () => {
         if (state.currentJumboItem) {
           SoundFX.playPop();
-          Confetti.fire(40);
-          SpeechEngine.speakBilingual(state.currentJumboItem.word, state.currentJumboItem.meaning, true);
+          SpeechEngine.speakBilingual(state.currentJumboItem.word, state.currentJumboItem.meaning);
         }
-      });
-    }
-
-    if (DOM.btnJumboAutoplay) {
-      DOM.btnJumboAutoplay.addEventListener('click', () => {
-        SoundFX.playPop();
-        switchMode('autoplay');
       });
     }
 
@@ -1459,17 +1328,6 @@
         if (state.currentJumboItem) {
           SoundFX.playPop();
           SpeechEngine.speakBilingual(state.currentJumboItem.word, state.currentJumboItem.meaning);
-          setMascotMessage(`${state.currentJumboItem.word} — ${state.currentJumboItem.meaning}!`);
-        }
-      });
-    }
-
-    if (DOM.btnJumboSlow) {
-      DOM.btnJumboSlow.addEventListener('click', () => {
-        if (state.currentJumboItem) {
-          SoundFX.playPop();
-          SpeechEngine.speakBilingual(state.currentJumboItem.word, state.currentJumboItem.meaning, true);
-          setMascotMessage(`${state.currentJumboItem.word} — ${state.currentJumboItem.meaning} (ধীরে ধীরে)!`);
         }
       });
     }
@@ -1485,286 +1343,89 @@
 
     if (DOM.btnJumboSentence) {
       DOM.btnJumboSentence.addEventListener('click', () => {
-        if (state.currentJumboItem) {
+        if (state.currentJumboItem && state.currentJumboItem.sentence) {
           SoundFX.playPop();
-          SpeechEngine.speak(state.currentJumboItem.sentence || state.currentJumboItem.word);
+          SpeechEngine.speak(state.currentJumboItem.sentence);
         }
       });
     }
 
-    if (DOM.btnJumboMic) {
-      DOM.btnJumboMic.addEventListener('click', handleJumboMic);
-    }
-
-    if (DOM.btnJumboPrev) {
-      DOM.btnJumboPrev.addEventListener('click', handleJumboPrev);
-    }
-
-    if (DOM.btnJumboNext) {
-      DOM.btnJumboNext.addEventListener('click', handleJumboNext);
-    }
-
-    // Modal Events
-    DOM.btnModalClose.addEventListener('click', closeModal);
-    DOM.wordModal.addEventListener('click', (e) => {
-      if (e.target === DOM.wordModal) closeModal();
-    });
-
-    if (DOM.btnModalSayBilingual) {
-      DOM.btnModalSayBilingual.addEventListener('click', () => {
-        if (currentModalItem) SpeechEngine.speakBilingual(currentModalItem.word, currentModalItem.meaning);
+    // Smiling Star Celebration Button
+    if (DOM.btnJumboStarCheer) {
+      DOM.btnJumboStarCheer.addEventListener('click', () => {
+        SoundFX.playCheer();
+        Confetti.fire(60);
+        updateStars(1);
+        setMascotMessage('তুমি একটি সুন্দর স্টার পেয়েছ! ⭐⭐⭐');
       });
     }
 
-    DOM.btnModalSayEn.addEventListener('click', () => {
-      if (currentModalItem) SpeechEngine.speakEnglish(currentModalItem.word);
-    });
-
-    DOM.btnModalSaySlow.addEventListener('click', () => {
-      if (currentModalItem) SpeechEngine.speakBilingual(currentModalItem.word, currentModalItem.meaning, true);
-    });
-
-    DOM.btnModalSpelling.addEventListener('click', () => {
-      if (currentModalItem) SpeechEngine.spellOut(currentModalItem.word, currentModalItem.meaning);
-    });
-
-    DOM.btnModalSaySentence.addEventListener('click', () => {
-      if (currentModalItem && currentModalItem.sentence) {
-        SpeechEngine.speakEnglish(currentModalItem.sentence);
-      }
-    });
-
-    // Modal Speech Recognition practice
-    DOM.btnModalTestMic.addEventListener('click', () => {
-      if (!currentModalItem) return;
-      DOM.modalMicFeedback.textContent = 'শুনছি... এখন বলো!';
-      SpeechRecognizer.startListening(
-        currentModalItem.word,
-        (spokenText, isMatch) => {
-          if (isMatch) {
-            Confetti.fire(50);
-            SoundFX.playFanfare();
-            updateStars(2);
-            DOM.modalMicFeedback.innerHTML = `<span style="color:#00B894;">🎉 দারুণ! You said "${spokenText}"! ⭐ +২</span>`;
-          } else {
-            SoundFX.playBoing();
-            DOM.modalMicFeedback.innerHTML = `<span style="color:#FF7675;">তুমি বলেছ: "${spokenText}"। আরেকবার চেষ্টা করো!</span>`;
-          }
-        },
-        () => {}
-      );
-    });
-
-    // Modal Prev / Next Navigation
-    DOM.btnModalPrev.addEventListener('click', () => {
-      const items = getCurrentItems();
-      if (items.length === 0) return;
-      state.currentWordIndex = (state.currentWordIndex - 1 + items.length) % items.length;
-      openWordModal(items[state.currentWordIndex]);
-    });
-
-    DOM.btnModalNext.addEventListener('click', () => {
-      const items = getCurrentItems();
-      if (items.length === 0) return;
-      state.currentWordIndex = (state.currentWordIndex + 1) % items.length;
-      openWordModal(items[state.currentWordIndex]);
-    });
-
-    // Quiz Controls
-    DOM.btnQuizListen.addEventListener('click', () => {
-      if (state.quiz.currentQuestion) {
-        SpeechEngine.speakBilingual(state.quiz.currentQuestion.correct.word, state.quiz.currentQuestion.correct.meaning);
-      }
-    });
-
-    DOM.btnQuizSkip.addEventListener('click', () => {
-      SoundFX.playPop();
-      startQuizQuestion();
-    });
-
-    // Speaking Practice Controls
-    DOM.btnSpeakListen.addEventListener('click', () => {
-      if (state.speaking.targetItem) {
-        SpeechEngine.speakBilingual(state.speaking.targetItem.word, state.speaking.targetItem.meaning);
-      }
-    });
-
-    DOM.btnMicListen.addEventListener('click', () => {
-      listenChildVoice();
-    });
-
-    DOM.btnSpeakNext.addEventListener('click', () => {
-      SoundFX.playPop();
-      state.speaking.currentIndex++;
-      loadSpeakingTarget();
-    });
-
-    // Memory Match Restart
-    DOM.btnMatchRestart.addEventListener('click', () => {
-      SoundFX.playPop();
-      setupMemoryMatch();
-    });
-
-    // Autoplay Controls
-    DOM.btnAutoplayPlaypause.addEventListener('click', () => {
-      SoundFX.playPop();
-      if (state.autoplay.isPlaying) {
-        pauseAutoplay();
-      } else {
-        startAutoplay();
-      }
-    });
-
-    DOM.btnAutoplayPrev.addEventListener('click', () => {
-      SoundFX.playPop();
-      const items = getCurrentItems();
-      state.autoplay.currentIndex = (state.autoplay.currentIndex - 1 + items.length) % items.length;
-      playAutoplaySlide();
-    });
-
-    DOM.btnAutoplayNext.addEventListener('click', () => {
-      SoundFX.playPop();
-      const items = getCurrentItems();
-      state.autoplay.currentIndex = (state.autoplay.currentIndex + 1) % items.length;
-      playAutoplaySlide();
-    });
-
-    // Settings Modal
-    DOM.btnSettings.addEventListener('click', () => {
-      SoundFX.playPop();
-      DOM.settingsModal.classList.add('active');
-    });
-
-    DOM.btnSettingsClose.addEventListener('click', () => {
-      DOM.settingsModal.classList.remove('active');
-    });
-
-    DOM.settingsModal.addEventListener('click', (e) => {
-      if (e.target === DOM.settingsModal) {
-        DOM.settingsModal.classList.remove('active');
-      }
-    });
-
-    DOM.settingRate.addEventListener('input', (e) => {
-      state.settings.rate = parseFloat(e.target.value);
-    });
-
-    DOM.settingPitch.addEventListener('input', (e) => {
-      state.settings.pitch = parseFloat(e.target.value);
-    });
-
-    DOM.settingVoiceEn.addEventListener('change', (e) => {
-      state.settings.voiceEn = SpeechEngine.voices.find(v => v.name === e.target.value);
-    });
-
-    DOM.settingVoiceBn.addEventListener('change', (e) => {
-      state.settings.voiceBn = SpeechEngine.voices.find(v => v.name === e.target.value);
-    });
-
-    DOM.btnTestVoice.addEventListener('click', () => {
-      SpeechEngine.speak("Hello little friend! Welcome to our book!");
-    });
-
-    // Keyboard navigation (Escape closes modal, Left/Right navigates)
+    // Keyboard Arrow Keys
     window.addEventListener('keydown', (e) => {
-      if (document.activeElement === DOM.wordSearch) return;
-
-      if (DOM.wordModal.classList.contains('active')) {
-        if (e.key === 'Escape') closeModal();
-        if (e.key === 'ArrowLeft') DOM.btnModalPrev.click();
-        if (e.key === 'ArrowRight') DOM.btnModalNext.click();
+      if (state.currentMode === 'home') {
+        if (e.key === 'ArrowLeft') coverflowPrev();
+        if (e.key === 'ArrowRight') coverflowNext();
+        if (e.key === 'Enter') openActiveCategory();
       } else if (state.currentMode === 'cards') {
         if (e.key === 'ArrowLeft') handleJumboPrev();
         if (e.key === 'ArrowRight') handleJumboNext();
+        if (e.key === 'Escape') switchMode('home');
       }
     });
-  }
 
-  // Service Worker & PWA Install Manager
-  let deferredPrompt = null;
-  function initPWA() {
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js').then((reg) => {
-        console.log('Service Worker registered successfully:', reg.scope);
-      }).catch((err) => {
-        console.warn('Service Worker registration failed:', err);
-      });
-    }
-
-    const pwaBanner = document.getElementById('pwa-install-banner');
-    const btnPwaInstall = document.getElementById('btn-pwa-install');
-    const btnPwaDismiss = document.getElementById('btn-pwa-dismiss');
-    const btnInstallHeader = document.getElementById('btn-install-app');
-
+    // PWA Install Prompt
+    let deferredPrompt;
     window.addEventListener('beforeinstallprompt', (e) => {
       e.preventDefault();
       deferredPrompt = e;
-
-      if (btnInstallHeader) btnInstallHeader.style.display = 'flex';
-      if (pwaBanner && !sessionStorage.getItem('pwa_dismissed')) {
-        pwaBanner.style.display = 'flex';
-      }
+      if (DOM.pwaBanner) DOM.pwaBanner.style.display = 'flex';
     });
 
-    const triggerInstall = async () => {
-      if (!deferredPrompt) {
-        alert('অ্যাপটি ফোনে ইনস্টল করতে আপনার ব্রাউজারের থ্রি-ডট (⋮) মেনু থেকে "Install app" অথবা "Add to Home screen" চাপুন!');
-        return;
-      }
-      deferredPrompt.prompt();
-      const choice = await deferredPrompt.userChoice;
-      if (choice && choice.outcome === 'accepted') {
-        SoundFX.playCheer();
-        Confetti.fire(60);
-      }
-      deferredPrompt = null;
-      if (pwaBanner) pwaBanner.style.display = 'none';
-      if (btnInstallHeader) btnInstallHeader.style.display = 'none';
-    };
-
-    if (btnPwaInstall) btnPwaInstall.addEventListener('click', triggerInstall);
-    if (btnInstallHeader) btnInstallHeader.addEventListener('click', triggerInstall);
-
-    if (btnPwaDismiss) {
-      btnPwaDismiss.addEventListener('click', () => {
-        if (pwaBanner) pwaBanner.style.display = 'none';
-        sessionStorage.setItem('pwa_dismissed', '1');
+    if (DOM.btnPwaInstall) {
+      DOM.btnPwaInstall.addEventListener('click', () => {
+        if (deferredPrompt) {
+          deferredPrompt.prompt();
+          deferredPrompt.userChoice.then(() => {
+            deferredPrompt = null;
+            if (DOM.pwaBanner) DOM.pwaBanner.style.display = 'none';
+          });
+        }
       });
     }
-
-    window.addEventListener('appinstalled', () => {
-      if (pwaBanner) pwaBanner.style.display = 'none';
-      if (btnInstallHeader) btnInstallHeader.style.display = 'none';
-      deferredPrompt = null;
-      SoundFX.playCheer();
-      Confetti.fire(80);
-    });
+    if (DOM.btnPwaDismiss) {
+      DOM.btnPwaDismiss.addEventListener('click', () => {
+        if (DOM.pwaBanner) DOM.pwaBanner.style.display = 'none';
+      });
+    }
   }
 
-  // App Initialization
-  function init() {
+  /* ==========================================================================
+     APPLICATION INITIALIZATION
+     ========================================================================== */
+  function initApp() {
     SoundFX.init();
     SpeechEngine.init();
     SpeechRecognizer.init();
     Confetti.init();
-    initPWA();
 
-    DOM.starCount.textContent = state.stars;
+    if (DOM.starCount) DOM.starCount.textContent = toBengaliDigits(state.stars);
 
-    renderCategoryPills();
+    renderCoverflow();
     renderKidCategoryGrid();
-    selectCategory('fruits');
-    setupEventListeners();
-    switchMode('home');
+    setupCoverflowSwipe();
+    setupJumboSwipe();
+    initPaintStudio();
+    initEventListeners();
 
-    console.log('Kids Interactive Talking Learning App initialized successfully!');
+    // Default to 'fruits' in background so cards view is primed
+    selectCategory('fruits');
   }
 
-  // Launch when DOM is ready
+  // Launch on DOM Ready
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
+    document.addEventListener('DOMContentLoaded', initApp);
   } else {
-    init();
+    initApp();
   }
 
 })();
