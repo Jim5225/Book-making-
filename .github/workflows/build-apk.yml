@@ -29,9 +29,6 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
-
       - name: Install Dependencies
         run: npm ci
 
@@ -47,7 +44,7 @@ jobs:
       - name: Build Android Debug APK
         run: |
           cd android
-          ./gradlew assembleDebug --no-daemon --stacktrace
+          ./gradlew assembleDebug --no-daemon
 
       - name: Upload APK as Artifact
         uses: actions/upload-artifact@v4
@@ -64,11 +61,11 @@ jobs:
           name: "Kids All in One - Android APK (Latest)"
           body: |
             ### 📱 Kids All in One (ছোটদের কথা বলা বই)
-            Android Debug APK ready for installation.
+            Android Debug APK ready for installation on Android phones.
             
-            - **Download File:** `app-debug.apk`
-            - **Commit:** `${{ github.sha }}`
-            - **Status:** 100% Free Educational Learning App
+            - **Download:** Click on `app-debug.apk` below
+            - **Commit:** ${{ github.sha }}
+            - **Status:** 100% Free
           files: android/app/build/outputs/apk/debug/app-debug.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
