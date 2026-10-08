@@ -1,4 +1,4 @@
-name: Build Android APK
+name: Deploy to GitHub Pages and Build APK
 
 on:
   push:
@@ -7,12 +7,39 @@ on:
 
 permissions:
   contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages-and-build"
+  cancel-in-progress: false
 
 jobs:
-  build:
-    name: Build Debug APK
+  deploy-pages:
+    name: Deploy to GitHub Pages (Live Web & iPhone PWA)
     runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
 
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages Artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: '.'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+  build-apk:
+    name: Build Android Debug APK
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
