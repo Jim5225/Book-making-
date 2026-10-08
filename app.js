@@ -364,7 +364,22 @@
     },
 
     speak(text, options = {}) {
-      if (!this.synth || !state.soundEnabled) return Promise.resolve();
+      if (!state.soundEnabled) return Promise.resolve();
+
+      // Check if running inside Android APK with NativeTTS bridge
+      if (window.AndroidNativeTTS && typeof window.AndroidNativeTTS.speak === 'function') {
+        try {
+          const lang = options.lang || 'en-US';
+          const rate = options.rate !== undefined ? options.rate : 0.82;
+          const pitch = options.pitch !== undefined ? options.pitch : 1.3;
+          window.AndroidNativeTTS.speak(text, lang, rate, pitch);
+          return Promise.resolve();
+        } catch (err) {
+          console.warn('NativeTTS error:', err);
+        }
+      }
+
+      if (!this.synth) return Promise.resolve();
       this.synth.cancel();
 
       return new Promise((resolve) => {
@@ -400,20 +415,36 @@
     },
 
     speakEnglish(word, slow = true) {
-      const rate = slow ? 0.68 : 0.74;
-      const pitch = 1.38;
+      const rate = slow ? 0.72 : 0.80;
+      const pitch = 1.35;
       return this.speak(word, { lang: 'en-US', rate, pitch, voice: state.settings.voiceEn });
     },
 
     speakBengali(text, slow = true) {
-      const rate = slow ? 0.66 : 0.72;
-      const pitch = 1.32;
+      const rate = slow ? 0.70 : 0.78;
+      const pitch = 1.30;
       return this.speak(text, { lang: 'bn-BD', rate, pitch, voice: state.settings.voiceBn });
     },
 
     // Sequential Melodic Bilingual Learning (English first, then Bengali meaning)
     async speakBilingual(word, meaning, slow = true) {
-      if (!this.synth || !state.soundEnabled) return;
+      if (!state.soundEnabled) return;
+
+      // If running inside Android Native TTS
+      if (window.AndroidNativeTTS && typeof window.AndroidNativeTTS.speak === 'function') {
+        window.AndroidNativeTTS.stop();
+        window.AndroidNativeTTS.speak(word, 'en-US', 0.80, 1.32);
+        // Play soft chime after 800ms
+        setTimeout(() => SoundFX.playSparkle(), 800);
+        // Speak Bengali meaning after 1100ms
+        setTimeout(() => {
+          window.AndroidNativeTTS.speak(meaning, 'bn-BD', 0.78, 1.28);
+        }, 1200);
+        return;
+      }
+
+      // Standard Web Speech API fallback
+      if (!this.synth) return;
       // 1. Speak English word
       await this.speakEnglish(word, slow);
 
