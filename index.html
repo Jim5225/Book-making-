@@ -87,7 +87,7 @@
 
     <!-- ================= 2. ITEM SHOWCASE: PURE WHITE STAGE (Exact Screenshot 3) ================= -->
     <section id="view-cards" class="view-panel pure-white-stage">
-      <!-- Top Floating Corner Buttons: Green Back Arrow (Left) & Cute Yellow Star (Right) -->
+      <!-- Top Floating Corner Buttons: Green Back Arrow (Left), Fullscreen Toggle (Center-Right), & Cute Yellow Star (Right) -->
       <div class="white-stage-top-bar">
         <button id="btn-back-home" class="glossy-circle-btn green" title="Back to Categories" aria-label="Back">
           <svg viewBox="0 0 24 24" width="28" height="28" fill="#4A6B1D">
@@ -95,15 +95,24 @@
           </svg>
         </button>
 
-        <!-- Cute Smiling Star Button (Top-Right) -->
-        <button id="btn-jumbo-star-cheer" class="cute-smiling-star-btn" title="Quiz / Cheer!">
-          <svg viewBox="0 0 64 64" width="54" height="54">
-            <polygon points="32,4 40,22 60,24 45,38 49,58 32,48 15,58 19,38 4,24 24,22" fill="#FFE135" stroke="#222" stroke-width="3" stroke-linejoin="round"/>
-            <circle cx="26" cy="30" r="2.5" fill="#222"/>
-            <circle cx="38" cy="30" r="2.5" fill="#222"/>
-            <path d="M29 35 Q32 38 35 35" stroke="#222" stroke-width="2.2" fill="none" stroke-linecap="round"/>
-          </svg>
-        </button>
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <!-- Fullscreen / Rotate Screen Button -->
+          <button id="btn-fullscreen-toggle" class="glossy-circle-btn cyan" title="বড় পর্দা / ফুলস্ক্রিন (Full Screen)" aria-label="Toggle Fullscreen">
+            <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="#004D40" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+            </svg>
+          </button>
+
+          <!-- Cute Smiling Star Button (Top-Right) -->
+          <button id="btn-jumbo-star-cheer" class="cute-smiling-star-btn" title="Quiz / Cheer!">
+            <svg viewBox="0 0 64 64" width="54" height="54">
+              <polygon points="32,4 40,22 60,24 45,38 49,58 32,48 15,58 19,38 4,24 24,22" fill="#FFE135" stroke="#222" stroke-width="3" stroke-linejoin="round"/>
+              <circle cx="26" cy="30" r="2.5" fill="#222"/>
+              <circle cx="38" cy="30" r="2.5" fill="#222"/>
+              <path d="M29 35 Q32 38 35 35" stroke="#222" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+            </svg>
+          </button>
+        </div>
       </div>
 
       <!-- Center Stage: Left Orange Arrow + Giant Isolated Picture + Right Orange Arrow -->

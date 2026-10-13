@@ -4,12 +4,12 @@
    ========================================================================== */
 
 :root {
-  --bezel-lime: #8CC63F;
-  --sky-cyan: #B5F4FF;
-  --sky-light: #D9FAFF;
-  --hill-light: #8ED432;
-  --hill-mid: #6EB425;
-  --hill-dark: #54921D;
+  --navy-darkest: #061120;
+  --navy-deep: #0B1D36;
+  --navy-mid: #102A4C;
+  --navy-light: #183C6C;
+  --navy-glow: #1E4E8C;
+  --navy-highlight: #2864B2;
 
   --wood-border-dark: #7B3407;
   --wood-border-mid: #AC5418;
@@ -19,6 +19,7 @@
 
   --title-brown: #7C3608;
   --bangla-green: #2B8A1E;
+  --bangla-mint: #4EFA96;
 }
 
 * {
@@ -33,7 +34,7 @@ html, body {
   width: 100%;
   height: 100%;
   font-family: 'Fredoka', 'Hind Siliguri', sans-serif;
-  background-color: var(--bezel-lime);
+  background-color: var(--navy-darkest);
   overflow: hidden;
   display: flex;
   justify-content: center;
@@ -41,18 +42,18 @@ html, body {
 }
 
 /* ==========================================================================
-   OUTER LIME-GREEN FRAME CONTAINER (Exact Screenshot Border)
+   OUTER NAVY BLUE FRAME CONTAINER
    ========================================================================== */
 .app-container {
   width: 100vw;
   height: 100vh;
-  border: 14px solid var(--bezel-lime);
-  background: var(--sky-cyan);
+  border: 12px solid var(--navy-darkest);
+  background: radial-gradient(ellipse at 50% 20%, #153866 0%, #0C213D 55%, #061222 100%);
   position: relative;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.12);
+  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.45);
 }
 
 @media (max-width: 640px) {
@@ -76,29 +77,30 @@ html, body {
 }
 
 /* ==========================================================================
-   SKY, FLUFFY CLOUDS & ROLLING GREEN HILLS BACKDROP (Screenshots 2 & 4)
+   SKY, FLUFFY CLOUDS & NAVY BLUE HILLS BACKDROP
    ========================================================================== */
 .sky-hills-backdrop {
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, #B2F3FF 0%, #CAFAFF 65%, #E0FCFF 100%);
+  background: radial-gradient(ellipse at 50% 15%, #183C6B 0%, #0C213D 55%, #061222 100%);
   z-index: 0;
   pointer-events: none;
   overflow: hidden;
 }
 
-/* Fluffy White Cartoon Clouds */
+/* Fluffy Soft Cartoon Clouds in Night Sky */
 .fluffy-cloud {
   position: absolute;
-  background: #FFFFFF;
+  background: rgba(255, 255, 255, 0.12);
   border-radius: 120px;
-  opacity: 0.96;
+  opacity: 0.85;
+  backdrop-filter: blur(4px);
 }
 .fluffy-cloud::before,
 .fluffy-cloud::after {
   content: '';
   position: absolute;
-  background: #FFFFFF;
+  background: rgba(255, 255, 255, 0.12);
   border-radius: 50%;
 }
 
@@ -159,7 +161,7 @@ html, body {
   left: 130px;
 }
 
-/* Rolling Green Hills at Bottom */
+/* Rolling Deep Navy Hills at Bottom */
 .green-hill {
   position: absolute;
   border-radius: 50%;
@@ -170,8 +172,8 @@ html, body {
   height: 58%;
   bottom: -28%;
   left: -12%;
-  background: radial-gradient(circle at 40% 25%, #A5E048 0%, #7CC127 65%, #5C9B19 100%);
-  box-shadow: inset 0 8px 20px rgba(255, 255, 255, 0.25);
+  background: radial-gradient(circle at 40% 25%, #153866 0%, #0D223F 65%, #071527 100%);
+  box-shadow: inset 0 8px 24px rgba(40, 100, 180, 0.2);
 }
 
 .green-hill.hill-right {
@@ -179,7 +181,7 @@ html, body {
   height: 55%;
   bottom: -26%;
   right: -14%;
-  background: radial-gradient(circle at 50% 30%, #7CC127 0%, #5B9D1B 70%, #447A12 100%);
+  background: radial-gradient(circle at 50% 30%, #102B4E 0%, #0B1E38 70%, #061120 100%);
 }
 
 /* ==========================================================================
@@ -509,10 +511,10 @@ html, body {
 
 
 /* ==========================================================================
-   2. ITEM SHOWCASE: PURE WHITE FULL-SCREEN STAGE (Exact Screenshot 3)
+   2. ITEM SHOWCASE: ENCHANTING NAVY BLUE STAGE
    ========================================================================== */
 .pure-white-stage {
-  background: #FFFFFF !important;
+  background: radial-gradient(ellipse at 50% 40%, #183C6C 0%, #0D223F 60%, #061120 100%) !important;
   z-index: 15;
 }
 
@@ -572,7 +574,7 @@ html, body {
   width: auto;
   height: auto;
   object-fit: contain;
-  filter: drop-shadow(0 16px 28px rgba(0, 0, 0, 0.16));
+  filter: drop-shadow(0 16px 28px rgba(0, 0, 0, 0.35));
   animation: livelyFloat 3.2s ease-in-out infinite;
   transform-origin: center bottom;
 }
@@ -581,14 +583,14 @@ html, body {
 @keyframes livelyFloat {
   0%, 100% {
     transform: translateY(0px) scale(1) rotate(0deg);
-    filter: drop-shadow(0 16px 26px rgba(0, 0, 0, 0.15));
+    filter: drop-shadow(0 16px 26px rgba(0, 0, 0, 0.35));
   }
   25% {
     transform: translateY(-10px) scale(1.04) rotate(-2deg);
   }
   50% {
     transform: translateY(-14px) scale(1.06) rotate(0deg);
-    filter: drop-shadow(0 26px 34px rgba(0, 0, 0, 0.11));
+    filter: drop-shadow(0 26px 34px rgba(0, 0, 0, 0.45));
   }
   75% {
     transform: translateY(-8px) scale(1.04) rotate(2deg);
@@ -603,11 +605,11 @@ html, body {
 @keyframes speakingDance {
   0% {
     transform: scale(1) translateY(0px) rotate(-2deg);
-    filter: drop-shadow(0 14px 28px rgba(255, 165, 0, 0.35));
+    filter: drop-shadow(0 14px 28px rgba(255, 165, 0, 0.6));
   }
   100% {
     transform: scale(1.1) translateY(-12px) rotate(2deg);
-    filter: drop-shadow(0 22px 36px rgba(140, 198, 63, 0.45));
+    filter: drop-shadow(0 22px 36px rgba(78, 250, 150, 0.65));
   }
 }
 
@@ -637,7 +639,7 @@ html, body {
   }
 }
 
-/* Bottom Centered Word & Bangla Meaning (Exact Screenshot 3 Position) */
+/* Bottom Centered Word & Bangla Meaning on Navy Stage */
 .white-stage-bottom {
   padding: 4px 20px 22px;
   text-align: center;
@@ -649,46 +651,55 @@ html, body {
   flex-direction: column;
   align-items: center;
   cursor: pointer;
-  padding: 4px 24px;
-  border-radius: 20px;
+  padding: 6px 28px;
+  border-radius: 24px;
+  background: rgba(10, 25, 47, 0.6);
+  border: 2px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 .bilingual-caption-wrap.caption-speaking {
   animation: captionPulse 0.65s ease-in-out infinite alternate;
+  border-color: rgba(78, 250, 150, 0.5);
+  box-shadow: 0 10px 30px rgba(78, 250, 150, 0.25);
 }
 @keyframes captionPulse {
   0% { transform: scale(1); }
-  100% { transform: scale(1.07); }
+  100% { transform: scale(1.06); }
 }
 .bilingual-caption-wrap:active {
   transform: scale(0.95);
 }
 
 .stage-english-word {
-  font-size: clamp(32px, 5vw, 52px);
-  font-weight: 700;
-  color: var(--title-brown);
+  font-size: clamp(34px, 5.2vw, 54px);
+  font-weight: 800;
+  color: #FFFFFF;
+  text-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
   line-height: 1.1;
-  letter-spacing: 0.4px;
+  letter-spacing: 0.6px;
 }
 
 .stage-bangla-row {
   display: flex;
   align-items: baseline;
   gap: 8px;
-  margin-top: 2px;
+  margin-top: 3px;
 }
 
 .stage-bangla-word {
-  font-size: clamp(24px, 3.6vw, 36px);
+  font-size: clamp(26px, 3.8vw, 38px);
   font-weight: 700;
-  color: var(--bangla-green);
+  color: var(--bangla-mint);
+  text-shadow: 0 2px 14px rgba(78, 250, 150, 0.45);
 }
 
 .stage-pron-hint {
-  font-size: clamp(15px, 2vw, 20px);
+  font-size: clamp(16px, 2.2vw, 22px);
   font-weight: 600;
-  color: #8D6E63;
+  color: #BAE6FD;
 }
 
 
@@ -1037,7 +1048,7 @@ html, body {
 }
 
 /* Mobile Portrait Responsiveness */
-@media (max-width: 640px) {
+@media (max-width: 640px) and (orientation: portrait) {
   .wooden-billboard-wrapper {
     padding: 6px 26px 16px;
   }
@@ -1071,3 +1082,173 @@ html, body {
     padding: 0 6px;
   }
 }
+
+/* ==========================================================================
+   FULL-SCREEN SCREEN-ROTATE (LANDSCAPE MODE)
+   "screen rotate korle full screen e chobi and bangla english lekha thakbe"
+   ========================================================================== */
+@media (orientation: landscape) {
+  .app-container {
+    border-width: 0 !important;
+    border-radius: 0 !important;
+    width: 100vw;
+    height: 100vh;
+  }
+
+  /* 1. Item Showcase in Landscape: Side-by-Side Full Screen Kid Theater */
+  #view-cards {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 68px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Pinned top floating buttons */
+  .white-stage-top-bar {
+    position: absolute;
+    top: 8px;
+    left: 14px;
+    right: 14px;
+    padding: 0;
+    z-index: 50;
+    pointer-events: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .white-stage-top-bar button {
+    pointer-events: auto;
+    transform: scale(0.88);
+  }
+
+  /* Fixed Edge Navigation Arrows in Landscape */
+  .white-stage-center .stage-prev {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 45;
+    width: 52px;
+    height: 52px;
+  }
+  .white-stage-center .stage-next {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 45;
+    width: 52px;
+    height: 52px;
+  }
+
+  /* Left/Center 60%: Giant Full-Screen Picture (Takes up to 88% of screen height!) */
+  .white-stage-center {
+    flex: 1.35;
+    height: 100%;
+    max-height: 98vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    position: relative;
+  }
+
+  .giant-object-holder {
+    width: 100%;
+    height: 100%;
+    max-height: 94vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px;
+  }
+
+  .giant-object-img {
+    max-width: 95%;
+    max-height: 88vh; /* Massive Full-Screen Height! */
+    width: auto;
+    height: auto;
+    object-fit: contain;
+  }
+
+  /* Right 40%: Prominent English & Bangla Hero Card */
+  .white-stage-bottom {
+    flex: 0.95;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 14px;
+    z-index: 40;
+  }
+
+  .bilingual-caption-wrap {
+    background: rgba(10, 25, 47, 0.72);
+    border: 2.5px solid rgba(78, 250, 150, 0.45);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.55), inset 0 0 20px rgba(78, 250, 150, 0.1);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border-radius: 28px;
+    padding: 22px 30px;
+    text-align: center;
+    width: 100%;
+    max-width: 390px;
+  }
+
+  .stage-english-word {
+    font-size: clamp(34px, 5.5vw, 56px);
+    line-height: 1.15;
+    margin-bottom: 6px;
+  }
+
+  .stage-bangla-row {
+    justify-content: center;
+    gap: 10px;
+  }
+
+  .stage-bangla-word {
+    font-size: clamp(28px, 4.2vw, 44px);
+  }
+
+  .stage-pron-hint {
+    font-size: clamp(16px, 2.4vw, 24px);
+  }
+
+  /* Home Screen in Landscape */
+  #view-home .home-top-bar {
+    padding: 6px 24px 0;
+  }
+  #view-home .wooden-billboard-wrapper {
+    padding: 4px 34px 10px;
+  }
+  #view-home .wooden-billboard {
+    height: clamp(180px, 60vh, 270px);
+    padding: 10px 16px;
+  }
+  #view-home .wooden-board-header {
+    margin-bottom: 2px;
+  }
+
+  /* Quiz in Landscape */
+  .quiz-exact-layout {
+    flex-direction: row;
+    height: 100%;
+    padding: 10px 20px;
+    gap: 16px;
+    align-items: center;
+  }
+  .quiz-left-sidebar {
+    width: 90px;
+    height: 90%;
+    justify-content: space-around;
+  }
+  .quiz-photo-grid {
+    height: 90%;
+    max-height: 90vh;
+  }
+}
+

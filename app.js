@@ -116,6 +116,7 @@
 
     // 2. Big Item Showcase
     btnBackHome: document.getElementById('btn-back-home'),
+    btnFullscreenToggle: document.getElementById('btn-fullscreen-toggle'),
     jumboCatBadge: document.getElementById('jumbo-cat-badge'),
     jumboCounter: document.getElementById('jumbo-counter'),
     btnJumboStarCheer: document.getElementById('btn-jumbo-star-cheer'),
@@ -1326,6 +1327,26 @@
         switchMode('home');
       });
     });
+
+    // Fullscreen Toggle Button (Bigger screen & rotation helper)
+    if (DOM.btnFullscreenToggle) {
+      DOM.btnFullscreenToggle.addEventListener('click', () => {
+        SoundFX.playPop();
+        if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+          if (document.documentElement.requestFullscreen) {
+            document.documentElement.requestFullscreen().catch(() => {});
+          } else if (document.documentElement.webkitRequestFullscreen) {
+            document.documentElement.webkitRequestFullscreen();
+          }
+        } else {
+          if (document.exitFullscreen) {
+            document.exitFullscreen().catch(() => {});
+          } else if (document.webkitExitFullscreen) {
+            document.webkitExitFullscreen();
+          }
+        }
+      });
+    }
 
     // 3D Coverflow Arrows
     if (DOM.btnCoverflowPrev) DOM.btnCoverflowPrev.addEventListener('click', coverflowPrev);
