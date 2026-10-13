@@ -310,6 +310,8 @@
   const SpeechEngine = {
     synth: window.speechSynthesis,
     voices: [],
+    currentAudio: null,
+    speakSessionId: 0,
 
     init() {
       if (!this.synth) return;
@@ -329,48 +331,13 @@
       DOM.settingVoiceEn.innerHTML = '';
       DOM.settingVoiceBn.innerHTML = '';
 
-      const femaleKeywords = ['female', 'girl', 'child', 'samantha', 'victoria', 'karen', 'moira', 'tessa', 'ava', 'allison', 'zira', 'aria', 'jenny', 'sonia', 'nabanita', 'tanishaa', 'piya', 'google', 'natural'];
-
-      let bestEnScore = -1;
-      let bestBnScore = -1;
-
       this.voices.forEach(v => {
         const opt = document.createElement('option');
         opt.value = v.name;
         opt.textContent = `${v.name} (${v.lang})`;
-        const lower = v.name.toLowerCase();
-
-        if (v.lang.startsWith('en')) {
-          DOM.settingVoiceEn.appendChild(opt);
-          let score = 0;
-          femaleKeywords.forEach(k => { if (lower.includes(k)) score += 3; });
-          if (v.lang === 'en-US' || v.lang === 'en-GB') score += 2;
-          if (v.default) score += 1;
-          if (score > bestEnScore) {
-            bestEnScore = score;
-            state.settings.voiceEn = v;
-            opt.selected = true;
-          }
-        }
-        if (v.lang.startsWith('bn') || lower.includes('bengali') || lower.includes('bangla')) {
-          DOM.settingVoiceBn.appendChild(opt);
-          let score = 0;
-          femaleKeywords.forEach(k => { if (lower.includes(k)) score += 3; });
-          if (v.lang.includes('BD')) score += 2;
-          if (score > bestBnScore) {
-            bestBnScore = score;
-            state.settings.voiceBn = v;
-            opt.selected = true;
-          }
-        }
+        if (v.lang.startsWith('en')) DOM.settingVoiceEn.appendChild(opt);
+        if (v.lang.startsWith('bn')) DOM.settingVoiceBn.appendChild(opt);
       });
-
-      if (!state.settings.voiceEn && this.voices.length > 0) {
-        state.settings.voiceEn = this.voices.find(v => v.lang.startsWith('en')) || this.voices[0];
-      }
-      if (!state.settings.voiceBn && this.voices.length > 0) {
-        state.settings.voiceBn = this.voices.find(v => v.lang.startsWith('bn')) || null;
-      }
     },
 
     setSpeakingVisual(active) {
@@ -379,10 +346,56 @@
       if (caption) caption.classList.toggle('caption-speaking', active);
     },
 
+    stopAll() {
+      this.speakSessionId++;
+      if (this.currentAudio) {
+        try {
+          this.currentAudio.pause();
+          this.currentAudio.currentTime = 0;
+        } catch (e) {}
+        this.currentAudio = null;
+      }
+      if (this.synth) {
+        try { this.synth.cancel(); } catch (e) {}
+      }
+      if (window.AndroidNativeTTS && typeof window.AndroidNativeTTS.stop === 'function') {
+        try { window.AndroidNativeTTS.stop(); } catch (e) {}
+      }
+      this.setSpeakingVisual(false);
+    },
+
+    playAudioFile(src, sessionId) {
+      return new Promise((resolve) => {
+        if (!state.soundEnabled || sessionId !== this.speakSessionId) return resolve(false);
+
+        const audio = new Audio(src);
+        this.currentAudio = audio;
+        audio.volume = 1.0;
+
+        audio.onplay = () => {
+          this.setSpeakingVisual(true);
+        };
+
+        audio.onended = () => {
+          this.setSpeakingVisual(false);
+          resolve(true);
+        };
+
+        audio.onerror = () => {
+          this.setSpeakingVisual(false);
+          resolve(false);
+        };
+
+        audio.play().catch(() => {
+          this.setSpeakingVisual(false);
+          resolve(false);
+        });
+      });
+    },
+
     speak(text, options = {}) {
       if (!state.soundEnabled) return Promise.resolve();
 
-      // Check if running inside Android APK with NativeTTS bridge
       if (window.AndroidNativeTTS && typeof window.AndroidNativeTTS.speak === 'function') {
         try {
           const lang = options.lang || 'en-US';
@@ -392,9 +405,7 @@
           window.AndroidNativeTTS.speak(text, lang, rate, pitch);
           setTimeout(() => this.setSpeakingVisual(false), 1200);
           return Promise.resolve();
-        } catch (err) {
-          console.warn('NativeTTS error:', err);
-        }
+        } catch (err) {}
       }
 
       if (!this.synth) return Promise.resolve();
@@ -402,86 +413,61 @@
 
       return new Promise((resolve) => {
         const utterance = new SpeechSynthesisUtterance(text);
-        utterance.rate = options.rate !== undefined ? options.rate : 0.56;
-        utterance.pitch = options.pitch !== undefined ? options.pitch : 1.52;
+        utterance.rate = options.rate !== undefined ? options.rate : 0.55;
+        utterance.pitch = options.pitch !== undefined ? options.pitch : 1.55;
         utterance.lang = options.lang || 'en-US';
-
-        if (options.voice) {
-          utterance.voice = options.voice;
-        } else if (utterance.lang.startsWith('bn') && state.settings.voiceBn) {
-          utterance.voice = state.settings.voiceBn;
-        } else if (utterance.lang.startsWith('en') && state.settings.voiceEn) {
-          utterance.voice = state.settings.voiceEn;
-        }
-
-        utterance.onstart = () => {
-          this.setSpeakingVisual(true);
-          if (DOM.mascotCharacter) DOM.mascotCharacter.classList.add('is-talking');
-        };
-
-        utterance.onend = () => {
-          this.setSpeakingVisual(false);
-          if (DOM.mascotCharacter) DOM.mascotCharacter.classList.remove('is-talking');
-          resolve();
-        };
-
-        utterance.onerror = () => {
-          this.setSpeakingVisual(false);
-          if (DOM.mascotCharacter) DOM.mascotCharacter.classList.remove('is-talking');
-          resolve();
-        };
-
+        utterance.onstart = () => this.setSpeakingVisual(true);
+        utterance.onend = () => { this.setSpeakingVisual(false); resolve(); };
+        utterance.onerror = () => { this.setSpeakingVisual(false); resolve(); };
         this.synth.speak(utterance);
       });
     },
 
-    // Slow, sweet little girl voice for English
-    speakEnglish(word, slow = true) {
-      const rate = slow ? 0.55 : 0.62;
-      const pitch = 1.52;
-      return this.speak(word, { lang: 'en-US', rate, pitch, voice: state.settings.voiceEn });
-    },
-
-    // Slow, sweet little girl voice for Bengali (with phonetic fallback for iOS if bn voice is missing)
-    speakBengali(text, slow = true, pronFallback = '') {
-      const rate = slow ? 0.52 : 0.58;
-      const pitch = 1.58;
-      return this.speak(text, { lang: 'bn-BD', rate, pitch, voice: state.settings.voiceBn });
-    },
-
-    // Sequential Melodic Bilingual Learning (Slow English first -> pause -> Slow Bengali meaning)
-    async speakBilingual(word, meaning, slow = true) {
+    // Studio-Quality Slow Baby-Girl Bilingual Pronunciation (Infobells Bangla + AnaNeural style)
+    async speakBilingual(word, meaning, audioId = null) {
       if (!state.soundEnabled) return;
+      this.stopAll();
+      const mySession = this.speakSessionId;
 
-      // If running inside Android Native TTS
-      if (window.AndroidNativeTTS && typeof window.AndroidNativeTTS.speak === 'function') {
-        window.AndroidNativeTTS.stop();
-        this.setSpeakingVisual(true);
-        // 1. Slow sweet English
-        window.AndroidNativeTTS.speak(word, 'en-US', 0.56, 1.52);
-        // Soft chime between languages
-        setTimeout(() => SoundFX.playSparkle(), 1350);
-        // 2. Slow sweet Bengali girl voice after clear pause
-        setTimeout(() => {
-          window.AndroidNativeTTS.speak(meaning, 'bn-BD', 0.52, 1.58);
-        }, 1850);
-        setTimeout(() => this.setSpeakingVisual(false), 3200);
-        return;
+      // Resolve audio file ID automatically if not passed
+      let resolvedId = audioId;
+      if (!resolvedId) {
+        const allItems = state.allCategories.flatMap(c => c.items);
+        const foundItem = allItems.find(i => i.word.toLowerCase() === String(word).toLowerCase());
+        if (foundItem) {
+          resolvedId = foundItem.id;
+        } else {
+          const foundCat = CATEGORY_CATALOG.find(c => c.title.toLowerCase() === String(word).toLowerCase());
+          if (foundCat) resolvedId = `cat_${foundCat.id}`;
+        }
       }
 
-      // Standard Web Speech API
-      if (!this.synth) return;
-      // 1. Speak English word slowly
-      await this.speakEnglish(word, slow);
+      if (resolvedId) {
+        // 1. Play Studio Slow Baby-Girl English MP3
+        const playedEn = await this.playAudioFile(`sounds/en/${resolvedId}.mp3`, mySession);
+        if (mySession !== this.speakSessionId) return;
 
-      // Soft musical sparkle chime between languages
+        if (playedEn) {
+          // Soft musical sparkle chime between English and Bengali
+          SoundFX.playSparkle();
+
+          // Generous 700ms pause so child clearly absorbs the English word first
+          await new Promise(r => setTimeout(r, 700));
+          if (mySession !== this.speakSessionId) return;
+
+          // 2. Play Studio Slow Baby-Girl Bengali MP3 (Infobells Bangla tone)
+          await this.playAudioFile(`sounds/bn/${resolvedId}.mp3`, mySession);
+          return;
+        }
+      }
+
+      // Fallback if dynamic text
+      await this.speak(word, { lang: 'en-US', rate: 0.55, pitch: 1.52 });
+      if (mySession !== this.speakSessionId) return;
       SoundFX.playSparkle();
-
-      // Generous 850ms pause so toddler absorbs the English word before hearing Bangla
-      await new Promise(r => setTimeout(r, 850));
-
-      // 2. Speak Bengali meaning slowly in high-pitched child voice
-      await this.speakBengali(meaning, slow);
+      await new Promise(r => setTimeout(r, 700));
+      if (mySession !== this.speakSessionId) return;
+      await this.speak(meaning, { lang: 'bn-BD', rate: 0.52, pitch: 1.58 });
     },
 
     async spellOut(word, meaning = null) {
