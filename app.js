@@ -624,15 +624,15 @@
   }
 
   /* ==========================================================================
-     1. 3D WOODEN BILLBOARD COVERFLOW CONTROLLER (Screenshot 2)
+     1. 3D WOODEN BILLBOARD COVERFLOW CONTROLLER (Exact Screenshot 2)
      ========================================================================== */
-  function renderCoverflow() {
+  function renderCoverflow(speakActive = false) {
     if (!DOM.coverflowStage) return;
     DOM.coverflowStage.innerHTML = '';
 
     const len = CATEGORY_CATALOG.length;
     if (DOM.categoryIndexBadge) {
-      DOM.categoryIndexBadge.textContent = `${toBengaliDigits(state.coverflowIndex + 1)} / ${toBengaliDigits(len)}`;
+      DOM.categoryIndexBadge.textContent = `${state.coverflowIndex + 1} / ${len}`;
     }
 
     CATEGORY_CATALOG.forEach((cat, idx) => {
@@ -652,12 +652,13 @@
       card.dataset.catId = cat.id;
 
       card.innerHTML = `
-        <div class="coverflow-img-box">
-          <img src="${cat.image}" alt="${cat.title}" class="coverflow-img" loading="lazy">
+        <div class="coverflow-img-wrap">
+          <img src="${cat.image}" alt="${cat.title}" loading="lazy">
         </div>
-        <h3 class="coverflow-title-en">${cat.title}</h3>
-        <h4 class="coverflow-title-bn">${cat.titleBn}</h4>
-        <span class="coverflow-count-tag">${typeof cat.count === 'number' ? `${toBengaliDigits(cat.count)}টি ছবি` : cat.count}</span>
+        <div class="coverflow-label-group">
+          <h3 class="coverflow-title-en">${cat.title}</h3>
+          <span class="coverflow-title-bn">${cat.titleBn}</span>
+        </div>
       `;
 
       card.addEventListener('click', (e) => {
@@ -671,27 +672,34 @@
           coverflowNext();
         } else {
           state.coverflowIndex = idx;
-          renderCoverflow();
+          renderCoverflow(true);
           SoundFX.playPop();
         }
       });
 
       DOM.coverflowStage.appendChild(card);
     });
+
+    if (speakActive) {
+      const active = CATEGORY_CATALOG[state.coverflowIndex];
+      if (active) {
+        SpeechEngine.speakBilingual(active.title, active.titleBn);
+      }
+    }
   }
 
   function coverflowPrev() {
     SoundFX.playPop();
     const len = CATEGORY_CATALOG.length;
     state.coverflowIndex = (state.coverflowIndex - 1 + len) % len;
-    renderCoverflow();
+    renderCoverflow(true);
   }
 
   function coverflowNext() {
     SoundFX.playPop();
     const len = CATEGORY_CATALOG.length;
     state.coverflowIndex = (state.coverflowIndex + 1) % len;
-    renderCoverflow();
+    renderCoverflow(true);
   }
 
   function openActiveCategory() {
@@ -869,7 +877,7 @@
   }
 
   /* ==========================================================================
-     3. QUIZ: 4-CARD PHOTO FINDER (Screenshot 3)
+     3. QUIZ: 4-CARD PHOTO FINDER (Exact Screenshot 4 with Taped Corners)
      ========================================================================== */
   function startQuizQuestion() {
     const allItems = state.allCategories.flatMap(c => c.items);
@@ -884,27 +892,27 @@
     state.quiz.answered = false;
 
     if (DOM.quizCounter) {
-      DOM.quizCounter.textContent = `${toBengaliDigits(state.quiz.qIndex)} / ${toBengaliDigits(state.quiz.totalQuestions)}`;
+      DOM.quizCounter.textContent = `${state.quiz.qIndex} / ${state.quiz.totalQuestions}`;
     }
     if (DOM.quizQuestionText) {
-      DOM.quizQuestionText.textContent = `কোনটি "${correct.word}"? (${correct.meaning})`;
-    }
-    if (DOM.quizHint) {
-      DOM.quizHint.textContent = 'সঠিক ছবিতে ট্যাপ করো!';
+      DOM.quizQuestionText.textContent = `Find: "${correct.word}" (${correct.meaning})`;
     }
     if (DOM.quizFeedback) {
       DOM.quizFeedback.textContent = '';
     }
 
-    // Render 4 Polaroid photo cards
+    // Render 4 Taped Wooden Photo Cards (Exact Screenshot 4)
     if (DOM.quizOptions) {
       DOM.quizOptions.innerHTML = '';
       options.forEach(opt => {
         const card = document.createElement('div');
-        card.className = 'quiz-card';
+        card.className = 'quiz-photo-card';
         card.innerHTML = `
+          <span class="tape-corner tl"></span>
+          <span class="tape-corner tr"></span>
+          <span class="tape-corner bl"></span>
+          <span class="tape-corner br"></span>
           <img src="${opt.image}" alt="${opt.word}" loading="lazy">
-          <span class="quiz-card-label">${opt.word}</span>
         `;
 
         card.addEventListener('click', () => handleQuizAnswer(opt, card));
@@ -923,7 +931,7 @@
     const correct = state.quiz.currentQuestion.correct;
     if (selected.id === correct.id) {
       // Correct!
-      cardEl.classList.add('correct');
+      cardEl.classList.add('correct-pick');
       state.quiz.correctCount++;
       updateStars(2);
       Confetti.fire(55);
@@ -932,30 +940,28 @@
 
       if (DOM.quizScoreCorrect) DOM.quizScoreCorrect.textContent = state.quiz.correctCount;
       if (DOM.quizFeedback) {
-        DOM.quizFeedback.innerHTML = `<span style="color:#00B894;">🎉 দারুণ! একদম সঠিক! (${correct.word} - ${correct.meaning})</span>`;
+        DOM.quizFeedback.innerHTML = `<span style="color:#2B8A1E;">🎉 সঠিক! ${correct.word} — ${correct.meaning}!</span>`;
       }
-      setMascotMessage(`সাবাশ! ${correct.word} মানে ${correct.meaning}! ⭐ +২ স্টার!`);
-      SpeechEngine.speakBilingual(correct.word, `বাহ্! চমৎকার! ${correct.meaning}!`);
+      SpeechEngine.speakBilingual(correct.word, correct.meaning);
 
       setTimeout(() => {
         state.quiz.qIndex = (state.quiz.qIndex % state.quiz.totalQuestions) + 1;
         startQuizQuestion();
-      }, 1800);
+      }, 1700);
     } else {
       // Wrong
-      cardEl.classList.add('wrong');
+      cardEl.classList.add('wrong-pick');
       state.quiz.wrongCount++;
       SoundFX.playBoing();
 
       if (DOM.quizScoreWrong) DOM.quizScoreWrong.textContent = state.quiz.wrongCount;
       if (DOM.quizFeedback) {
-        DOM.quizFeedback.innerHTML = `<span style="color:#FF7675;">🙂 সঠিক উত্তরটি ছিল: ${correct.word} (${correct.meaning})</span>`;
+        DOM.quizFeedback.innerHTML = `<span style="color:#EA2027;">সঠিক উত্তর: ${correct.word} (${correct.meaning})</span>`;
       }
-      setMascotMessage(`একটু ভুল হয়েছে, চলো আবার চেষ্টা করি!`);
 
       setTimeout(() => {
         startQuizQuestion();
-      }, 1800);
+      }, 1700);
     }
   }
 
@@ -1381,13 +1387,12 @@
       });
     }
 
-    // Smiling Star Celebration Button
+    // Smiling Star Button -> Opens 4-Card Quiz Mode (Exact Kids All in One Flow)
     if (DOM.btnJumboStarCheer) {
       DOM.btnJumboStarCheer.addEventListener('click', () => {
-        SoundFX.playCheer();
-        Confetti.fire(60);
-        updateStars(1);
-        setMascotMessage('তুমি একটি সুন্দর স্টার পেয়েছ! ⭐⭐⭐');
+        SoundFX.playSparkle();
+        Confetti.fire(40);
+        switchMode('quiz');
       });
     }
 
