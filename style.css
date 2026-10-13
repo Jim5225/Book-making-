@@ -467,16 +467,7 @@ html, body {
 }
 
 .coverflow-card.center .coverflow-img-wrap img {
-  animation: gentleBobble 3s ease-in-out infinite;
-}
-
-.coverflow-card.center:hover .coverflow-img-wrap img {
-  transform: scale(1.08);
-}
-
-@keyframes gentleBobble {
-  0%, 100% { transform: translateY(0px) scale(1) rotate(0deg); }
-  50% { transform: translateY(-7px) scale(1.04) rotate(2deg); }
+  /* Still and stable image */
 }
 
 .coverflow-label-group {
@@ -575,68 +566,22 @@ html, body {
   height: auto;
   object-fit: contain;
   filter: drop-shadow(0 16px 28px rgba(0, 0, 0, 0.35));
-  animation: livelyFloat 3.2s ease-in-out infinite;
-  transform-origin: center bottom;
+  /* Still and stable image - no shaking or floating */
+  transform: none !important;
+  animation: none !important;
 }
 
-/* Continuous 3D Floating & Breathing Animation on Every Picture */
-@keyframes livelyFloat {
-  0%, 100% {
-    transform: translateY(0px) scale(1) rotate(0deg);
-    filter: drop-shadow(0 16px 26px rgba(0, 0, 0, 0.35));
-  }
-  25% {
-    transform: translateY(-10px) scale(1.04) rotate(-2deg);
-  }
-  50% {
-    transform: translateY(-14px) scale(1.06) rotate(0deg);
-    filter: drop-shadow(0 26px 34px rgba(0, 0, 0, 0.45));
-  }
-  75% {
-    transform: translateY(-8px) scale(1.04) rotate(2deg);
-  }
-}
-
-/* Extra Joyful Pulse While Voice is Speaking */
+/* Stable and calm image even when speaking */
 .giant-object-img.is-speaking-glow {
-  animation: speakingDance 0.65s ease-in-out infinite alternate !important;
+  transform: none !important;
+  animation: none !important;
+  filter: drop-shadow(0 16px 28px rgba(0, 0, 0, 0.35)) drop-shadow(0 0 16px rgba(78, 250, 150, 0.35)) !important;
 }
 
-@keyframes speakingDance {
-  0% {
-    transform: scale(1) translateY(0px) rotate(-2deg);
-    filter: drop-shadow(0 14px 28px rgba(255, 165, 0, 0.6));
-  }
-  100% {
-    transform: scale(1.1) translateY(-12px) rotate(2deg);
-    filter: drop-shadow(0 22px 36px rgba(78, 250, 150, 0.65));
-  }
-}
-
-/* Springy Pop-Bounce Entrance When Next/Prev Clicked */
+/* Clean calm transition without bouncing */
 .bounce-pop {
-  animation: jellyEntrance 0.65s cubic-bezier(0.28, 0.84, 0.42, 1), livelyFloat 3.2s ease-in-out 0.65s infinite !important;
-}
-
-@keyframes jellyEntrance {
-  0% {
-    transform: scale(0.35) translateY(40px) rotate(-8deg);
-    opacity: 0;
-  }
-  45% {
-    transform: scale(1.14, 0.88) translateY(-12px) rotate(3deg);
-    opacity: 1;
-  }
-  65% {
-    transform: scale(0.94, 1.06) translateY(-4px) rotate(-2deg);
-  }
-  82% {
-    transform: scale(1.04, 0.97) translateY(0px) rotate(1deg);
-  }
-  100% {
-    transform: scale(1) translateY(0px) rotate(0deg);
-    opacity: 1;
-  }
+  animation: none !important;
+  transform: none !important;
 }
 
 /* Bottom Centered Word & Bangla Meaning on Navy Stage */
